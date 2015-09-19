@@ -1,0 +1,7 @@
+SECRET_KEY=__secret_key__
+DJANGO_DEV=True
+DJANGO_DEBUG=True
+DATABASE_URL=postgres://pontoon:__db_password__@localhost/pontoon
+SESSION_COOKIE_SECURE=False
+HMAC_KEY=__hmac_key__
+SITE_URL=http://localhost:8000

@@ -1,0 +1,1 @@
+/vagrant//vagrant/supervisor/conf.d
