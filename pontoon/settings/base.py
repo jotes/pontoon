@@ -546,6 +546,18 @@ MICROSOFT_TERMINOLOGY_LOCALES = [
 # Contributors to exclude from Top Contributors list
 EXCLUDE = os.environ.get('EXCLUDE', '').split(',')
 
+
 SYNC_TASK_TIMEOUT = 60 * 60  # 1 hour
 
+
 SYNC_LOG_RETENTION = 90  # days
+
+
+# Number of translations inserted to the database in one batch.
+TRANSLATION_MEMORY_BATCH_SIZE = 100
+
+# Nssumber of seconds after which celery will send translations if batch was too small.
+TRANSLATION_MEMORY_FLUSH_EVERY = 10
+
+# How many times we should retry indexing operation if an exception occurs.
+TRANSLATION_MEMORY_MAX_RETRIES = 5
