@@ -21,7 +21,6 @@ from jsonfield import JSONField
 
 from pontoon.administration.vcs import commit_to_vcs, get_revision, update_from_vcs
 from pontoon.base import utils
-from pontoon.base.tasks import update_translation_memory
 from pontoon.base.utils import get_object_or_none
 from pontoon.sync import KEY_SEPARATOR
 
@@ -883,6 +882,8 @@ class Translation(DirtyFieldsMixin, models.Model):
         return self.string
 
     def save(self, imported=False, *args, **kwargs):
+        from pontoon.base.tasks import update_translation_memory
+
         super(Translation, self).save(*args, **kwargs)
 
         # Only one translation can be approved at a time for any
@@ -892,8 +893,9 @@ class Translation(DirtyFieldsMixin, models.Model):
                 .filter(entity=self.entity, locale=self.locale, plural_form=self.plural_form)
                 .exclude(pk=self.pk)
                 .update(approved=False, approved_user=None, approved_date=None))
-            update_translation_memory.delay({'source': self.entity.string,
-                                             'string': self.string,
+            update_translation_memory.delay({'pk': self.pk,
+                                             'source': self.entity.string,
+                                             'target': self.string,
                                              'resource': self.entity.resource.path})
 
         if not imported:

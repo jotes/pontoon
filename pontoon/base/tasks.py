@@ -1,16 +1,19 @@
-<<<<<<< HEAD
 import sys
 
 from celery import Task
-=======
-from celery import Task, shared_task
-from celery.batches import Batches
-from django.conf import settings
->>>>>>> Added task to update elasticsearch
+import logging
 
-from elasticsearch import ElasticSearch
+from celery import Task, shared_task
+from celery.contrib.batches import Batches
+
+from django.conf import settings
+
+from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
+
 from pontoon.base.errors import send_exception
+
+log = logging.getLogger(__name__)
 
 class FailureMixin(object):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
@@ -28,9 +31,14 @@ class PontoonBatchesTask(Batches, FailureMixin):
     """Common functionality for all batch-like tasks."""
     abstract=True
 
-@shared_task(base=PontoonBatchesTask, flush_every=settings.TM_FLUSH_EVERY,
+
+@shared_task(base=PontoonBatchesTask, bind=True, flush_every=settings.TM_FLUSH_EVERY,
     flush_interval=settings.TM_FLUSH_INTERVAL)
-def update_memory_translation(translations):
+def update_translation_memory(self, translations):
+    """
+    Tasks takes a batches of translations.
+    :param translations: list of translations, batched by Batches task class.
+    """
     def translation_to_action(translation):
         translation_pk = translation.pop('pk')
         return {
@@ -39,6 +47,6 @@ def update_memory_translation(translations):
             '_type': settings.TM_ELASTICSEARCH_TYPE,
             '_source': translation
         }
-    es = ElasticSearch(**settings.TM_ELASTICSEARCH_CONNECTION)
+    es = Elasticsearch(**settings.TM_ELASTICSEARCH_CONNECTION)
     bulk(es, map(translation_to_action, translations))
->>>>>>> Added task to update elasticsearch
+    log.info("Indexed {} translations.".format(len(translations)))

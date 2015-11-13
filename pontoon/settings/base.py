@@ -66,13 +66,15 @@ BROKER_URL = os.environ.get('RABBITMQ_URL', None)
 
 # Execute celery tasks locally instead of in a worker unless the
 # environment is configured.
-CELERY_ALWAYS_EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') != 'False'
+CELERY_ALWAYS_EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True').lower() != 'false'
 
 # Limit the number of tasks a celery worker can handle before being replaced.
 try:
     CELERYD_MAX_TASKS_PER_CHILD = int(os.environ.get('CELERYD_MAX_TASKS_PER_CHILD', ''))
 except ValueError:
     CELERYD_MAX_TASKS_PER_CHILD = 20
+
+CELERYD_PREFETCH_MULTIPLIER = int(os.environ.get('CELERYD_PREFETCH_MULTIPLIER', 0))
 
 # Microsoft Translator API Key
 MICROSOFT_TRANSLATOR_API_KEY = os.environ.get('MICROSOFT_TRANSLATOR_API_KEY', '')
@@ -554,10 +556,14 @@ SYNC_LOG_RETENTION = 90  # days
 
 
 # Number of translations inserted to the database in one batch.
-TRANSLATION_MEMORY_BATCH_SIZE = 100
+TM_FLUSH_EVERY = 1
 
-# Nssumber of seconds after which celery will send translations if batch was too small.
-TRANSLATION_MEMORY_FLUSH_EVERY = 10
+# Number of seconds after which celery will send translations if batch was too small.
+TM_FLUSH_INTERVAL = 1
 
 # How many times we should retry indexing operation if an exception occurs.
-TRANSLATION_MEMORY_MAX_RETRIES = 5
+TM_MAX_RETRIES = 5
+
+TM_ELASTICSEARCH_CONNECTION = {
+    'hosts': ["127.0.0.1"]
+}
