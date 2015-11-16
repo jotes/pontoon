@@ -862,6 +862,10 @@ class Translation(DirtyFieldsMixin, models.Model):
     approved_date = models.DateTimeField(null=True, blank=True)
     fuzzy = models.BooleanField(default=False)
 
+    # Tells if translation is available as a suggestion for the translators.
+    # These translation should be available in translation memory.
+    suggested = models.BooleanField(default=False)
+
     # extra stores data that we want to save for the specific format
     # this translation is stored in, but that we otherwise don't care
     # about.
@@ -893,10 +897,6 @@ class Translation(DirtyFieldsMixin, models.Model):
                 .filter(entity=self.entity, locale=self.locale, plural_form=self.plural_form)
                 .exclude(pk=self.pk)
                 .update(approved=False, approved_user=None, approved_date=None))
-            update_translation_memory.delay({'pk': self.pk,
-                                             'source': self.entity.string,
-                                             'target': self.string,
-                                             'resource': self.entity.resource.path})
 
         if not imported:
             # Update stats AFTER changing approval status.

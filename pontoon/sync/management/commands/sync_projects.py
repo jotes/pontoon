@@ -4,6 +4,7 @@ from django.utils import timezone
 from pontoon.base.models import Project
 from pontoon.sync.models import SyncLog
 from pontoon.sync.tasks import sync_project
+from pontoon.translation_memory.tasks import sync_translation_memory
 
 
 class Command(BaseCommand):
@@ -35,6 +36,14 @@ class Command(BaseCommand):
             help='Always sync even if there are no changes'
         )
 
+        parser.add_argument(
+            '--sync-translation-memory',
+            action='store_true',
+            dest='sync_translation_memory',
+            default=False,
+            help='Sync translation memory with latest translations.'
+        )
+
     def handle(self, *args, **options):
         """
         Collect the projects we want to sync and trigger worker jobs to
@@ -61,4 +70,5 @@ class Command(BaseCommand):
                     no_pull=options['no_pull'],
                     no_commit=options['no_commit'],
                     force=options['force'],
+                    sync_tm=options['sync_translation_memory']
                 )

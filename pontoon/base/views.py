@@ -775,7 +775,7 @@ def translation_memory(request):
         for a, b in t[:max_results]:
             b["target"] = a
             translations_array.append(b)
-
+        import ipdb; ipdb.set_trace()
         return HttpResponse(json.dumps({
             'translations': translations_array
         }), content_type='application/json')

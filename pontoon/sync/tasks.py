@@ -4,8 +4,13 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
 
+
 from pontoon.administration.vcs import CommitToRepositoryException
-from pontoon.base.models import ChangedEntityLocale, Project, Repository
+from pontoon.base.models import (ChangedEntityLocale,
+    Entity,
+    Project,
+    Repository,
+    Translation)
 from pontoon.base.tasks import PontoonTask
 from pontoon.sync.changeset import ChangeSet
 from pontoon.sync.core import (
@@ -18,7 +23,7 @@ from pontoon.sync.core import (
 )
 from pontoon.sync.models import ProjectSyncLog, RepositorySyncLog, SyncLog
 from pontoon.sync.vcs_models import VCSProject
-
+from pontoon.translation_memory.tasks import sync_translation_memory
 
 log = logging.getLogger(__name__)
 
@@ -75,6 +80,8 @@ def sync_project(self, project_pk, sync_log_pk, no_pull=False, no_commit=False, 
             no_commit=no_commit
         )
 
+    if sync_tm:
+        sync_translation_memory(project_pk)
     log.info('Synced resources for project {0}.'.format(db_project.slug))
 
 
