@@ -6,12 +6,17 @@ TranslationMapping = {
     "properties": {
         "entity_pk": {"type": "integer"},
         "source": {
-            "type": "string",
-            "term_vector": "yes"
+            "type": "completion",
+            "context": {
+                "locale": {
+                    "type": "category",
+                    "path": "locale"
+                }
+            }
         },
         "target": {"type": "string"},
         "locale": {"type": "string"},
-        "plural_form": {"type": "integer"}
+        "plural_form": {"type": "integer"},
     }
 }
 
