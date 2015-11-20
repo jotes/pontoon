@@ -24,6 +24,9 @@ urlpatterns = patterns('',
     # Sync views
     (r'', include('pontoon.sync.urls')),
 
+    # Translation memory views
+    (r'', include('pontoon.translation_memory.urls')),
+
     # Test project: Pontoon Intro
     url(r'^intro/$', 'pontoon.intro.views.intro'),
 

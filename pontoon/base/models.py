@@ -886,8 +886,6 @@ class Translation(DirtyFieldsMixin, models.Model):
         return self.string
 
     def save(self, imported=False, *args, **kwargs):
-        from pontoon.base.tasks import update_translation_memory
-
         super(Translation, self).save(*args, **kwargs)
 
         # Only one translation can be approved at a time for any

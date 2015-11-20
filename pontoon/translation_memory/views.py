@@ -7,9 +7,10 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.utils.datastructures import MultiValueDictKeyError
 from django.shortcuts import render
+from pontoon.translation_memory.indexes import get_index_name
 
 
-def translation_memory():
+def translation_memory(request):
     """Get translations from internal translations."""
     try:
         text, locale, pk = request.GET['text'], request.GET['locale'], int(request.GET['pk'])
@@ -18,18 +19,17 @@ def translation_memory():
         return HttpResponse('error')
 
     es = Elasticsearch(**settings.TM_ELASTICSEARCH_CONNECTION)
-    translations = es.suggest(index=settings.TM_ELASTICSEARCH_INDEX, body={
-        'text': text,
-        'simple_phrase': {
-            'field': 'source',
-            'context': {
-                'locale': locale
-            }
-        }
+    translations = es.search(index=get_index_name(locale), doc_type='entities', body={
+        'query':{'fuzzy': {
+            'source': {
+                'value': text,
+                'fuzziness': 1
+            },
+        }}
     })
-
+    # import ipdb; ipdb.set_trace()
     context = {
-        'translations': filter(lambda t: t['pk'] != pk, translations)
+        'translations': translations, #filter(lambda t: t['pk'] != pk, translations['suggest-translation'][0]['options'])
     }
 
     return HttpResponse(json.dumps(context))

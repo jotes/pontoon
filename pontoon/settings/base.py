@@ -108,6 +108,7 @@ INSTALLED_APPS = (
     'pontoon.intro',
     'pontoon.sites',
     'pontoon.sync',
+    'pontoon.translation_memory',
 
     # Django contrib apps
     'django.contrib.admin',
@@ -445,6 +446,10 @@ LOGGING = {
             'handlers': ['console'],
             'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
         },
+        'elasticsearch': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        },
         'django_browserid': {
             'handlers': ['console'],
         },
@@ -568,5 +573,5 @@ TM_ELASTICSEARCH_CONNECTION = {
     'hosts': ["127.0.0.1"]
 }
 
-TM_ELASTICSEARCH_INDEX = 'memory'
-TM_ELASTICSEARCH_TYPE = 'translations'
+TM_ELASTICSEARCH_INDEX = 'translations-{locale_code}'
+
