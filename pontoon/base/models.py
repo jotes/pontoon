@@ -897,6 +897,12 @@ class Translation(DirtyFieldsMixin, models.Model):
                 .exclude(pk=self.pk)
                 .update(approved=False, approved_user=None, approved_date=None))
 
+            if not self.memory_entries.exists():
+                TranslationMemoryEntry.objects.create(
+                    source=self.entity.string, target=self.string,
+                    entity=self.entity, translation=self, locale=self.locale
+                )
+
         if not imported:
             # Update stats AFTER changing approval status.
             stats = update_stats(self.entity.resource, self.locale)
@@ -949,6 +955,16 @@ class Translation(DirtyFieldsMixin, models.Model):
             'approved': self.approved,
             'fuzzy': self.fuzzy,
         }
+
+
+class TranslationMemoryEntry(models.Model):
+    source = models.TextField()
+    target = models.TextField()
+
+    entity = models.ForeignKey(Entity, null=True, on_delete=models.SET_NULL)
+    translation = models.ForeignKey(Translation, null=True, on_delete=models.SET_NULL,
+                                    related_name="memory_entries")
+    locale = models.ForeignKey(Locale)
 
 
 class Stats(models.Model):
