@@ -280,8 +280,8 @@ def create_tempfile(contents):
     return path
 
 
-def assert_json(response, obj):
+def assert_json(response, expected_obj):
     """
-    Checks if response contains a json objects which equals passed obj parameter.
+    Checks if response contains a expected json object.
     """
-    assert_equal(json.loads(response.content), obj)
+    assert_equal(json.loads(response.content), expected_obj)

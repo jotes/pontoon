@@ -709,25 +709,26 @@ def translation_memory(request):
 
     # Only check entities with similar length
     entries = TranslationMemoryEntry.objects.filter(locale=locale).extra(
-        where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)'\
-              'AND levenshtein_ratio(source, %s) > %s'],
+        where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)'
+              ' AND levenshtein_ratio(source, %s) > %s'],
         params=(min_dist, max_dist, text, min_quality),
         select={'quality': 'levenshtein_ratio(source, %s) * 100'},
-        select_params=(text,))
+        select_params=(text,)
+    )
 
     # Exclude existing entity
     if pk:
         entries = entries.exclude(entity__pk=pk)
 
     entries = list(
-            entries
-                .values('source', 'target', 'quality')
-                .order_by('-quality')
+        entries
+            .values('source', 'target', 'quality')
+            .order_by('-quality')
     )
     suggestions = defaultdict(lambda: {'count': 0, 'quality': 0})
 
     for entry in entries:
-        if entry['target'] not in suggestions or (entry['target'] in suggestions and entry['quality'] > suggestions[entry['target']]['quality']):
+        if entry['target'] not in suggestions or entry['quality'] > suggestions[entry['target']]['quality']:
             suggestions[entry['target']].update(entry)
         suggestions[entry['target']]['count'] += 1
 

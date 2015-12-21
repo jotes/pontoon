@@ -252,20 +252,25 @@ class LocaleProjectTests(ViewTestCase):
 class TranslateMemoryTests(ViewTestCase):
     def test_best_quality_entry(self):
         """
-        Translation memory should return results entries aggregated by translation string.
+        Translation memory should return results entries aggregated by
+        translation string.
         """
         new_locale = LocaleFactory.create()
         memory_entry = TranslationMemoryFactory.create(source="aaa", target="ccc", locale=new_locale)
         TranslationMemoryFactory.create(source="aaa", target="ddd", locale=new_locale)
         TranslationMemoryFactory.create(source="bbb", target="ccc", locale=new_locale)
 
-        response = self.client.get('/translation-memory/', {'text': 'aaa', 'pk': memory_entry.entity.pk,
-            'locale': new_locale.code})
+        response = self.client.get('/translation-memory/', {
+            'text': 'aaa',
+            'pk': memory_entry.entity.pk,
+            'locale': new_locale.code
+        })
         assert_json(response, {"translations": [{"count": 1, "source": "aaa", "quality": 100.0, "target": "ddd"}]})
 
     def test_translation_counts(self):
         """
-        Translation memory should aggregate identical translations strings from the different entities and count up their occurrences.
+        Translation memory should aggregate identical translations strings
+        from the different entities and count up their occurrences.
         """
         new_locale = LocaleFactory.create()
         memory_entry = TranslationMemoryFactory.create(source="aaaa", target="ccc", locale=new_locale)
@@ -273,8 +278,11 @@ class TranslateMemoryTests(ViewTestCase):
         TranslationMemoryFactory.create(source="aaab", target="ccc", locale=new_locale)
         TranslationMemoryFactory.create(source="aaab", target="ccc", locale=new_locale)
 
-        response = self.client.get('/translation-memory/', {'text': 'aaaa', 'pk': memory_entry.entity.pk,
-            'locale': memory_entry.locale.code})
+        response = self.client.get('/translation-memory/', {
+            'text': 'aaaa',
+            'pk': memory_entry.entity.pk,
+            'locale': memory_entry.locale.code
+        })
         assert_json(response, {u'translations': [{u'count': 3,
                      u'quality': 75.0,
                      u'source': u'abaa',
@@ -285,8 +293,11 @@ class TranslateMemoryTests(ViewTestCase):
         Exclude entity from results to avoid false positive results.
         """
         memory_entry = TranslationMemoryFactory.create(source="Pontoon Intro")
-        response = self.client.get('/translation-memory/', {'text': 'Pontoon Intro', 'pk': memory_entry.entity.pk,
-            'locale': memory_entry.locale.code})
+        response = self.client.get('/translation-memory/', {
+            'text': 'Pontoon Intro',
+            'pk': memory_entry.entity.pk,
+            'locale': memory_entry.locale.code
+        })
         assert_code(response, 200)
         assert_equal(response.content, 'no')
 
@@ -297,6 +308,10 @@ class TranslateMemoryTests(ViewTestCase):
         # Generate some random entries that shouldn't be similar
         TranslationMemoryFactory.create_batch(5)
 
-        response = self.client.get('/translation-memory/', {'text': 'no match', 'pk': 2, 'locale': 'en-GB'})
+        response = self.client.get('/translation-memory/', {
+            'text': 'no match',
+            'pk': 2,
+            'locale': 'en-GB'
+        })
         assert_code(response, 200)
         assert_equal(response.content, 'no')
