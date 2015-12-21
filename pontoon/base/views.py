@@ -1,6 +1,5 @@
 import json
 import logging
-import math
 import os
 import requests
 import xml.etree.ElementTree as ET
@@ -701,30 +700,14 @@ def translation_memory(request):
         log.error(e)
         return HttpResponse('error')
 
-    min_quality = 0.7
     max_results = 5
-    length = len(text)
-    min_dist = math.ceil(max(length * min_quality, 2))
-    max_dist = math.floor(min(length / min_quality, 1000))
-
-    # Only check entities with similar length
-    entries = TranslationMemoryEntry.objects.filter(locale=locale).extra(
-        where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)'
-              ' AND levenshtein_ratio(source, %s) > %s'],
-        params=(min_dist, max_dist, text, min_quality),
-        select={'quality': 'levenshtein_ratio(source, %s) * 100'},
-        select_params=(text,)
-    )
+    entries = TranslationMemoryEntry.objects.minimum_levenshtein_ratio(text).filter(locale=locale)
 
     # Exclude existing entity
     if pk:
         entries = entries.exclude(entity__pk=pk)
 
-    entries = list(
-        entries
-            .values('source', 'target', 'quality')
-            .order_by('-quality')
-    )
+    entries = entries.values('source', 'target', 'quality').order_by('-quality')
     suggestions = defaultdict(lambda: {'count': 0, 'quality': 0})
 
     for entry in entries:
@@ -734,10 +717,11 @@ def translation_memory(request):
 
     if len(suggestions) > 0:
         return JsonResponse({
-            'translations': list(sorted(suggestions.values(), key=lambda e: e['count'], reverse=True))[:max_results],
+            'translations': sorted(suggestions.values(), key=lambda e: e['count'], reverse=True)[:max_results],
         })
     else:
         return HttpResponse('no')
+
 
 def machine_translation(request):
     """Get translation from machine translation service."""

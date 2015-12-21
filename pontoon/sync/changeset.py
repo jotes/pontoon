@@ -233,15 +233,14 @@ class ChangeSet(object):
             ])
 
     def bulk_create_translations(self):
-        def map_to_translation_memory(translation):
-            return TranslationMemoryEntry(
-                source=translation.entity.string,
-                target=translation.string,
-                locale_id=translation.locale_id
-            )
         Translation.objects.bulk_create(self.translations_to_create)
-        translations = filter(lambda t: t.plural_form in (None, 0), self.translations_to_create)
-        TranslationMemoryEntry.objects.bulk_create(map(map_to_translation_memory, translations))
+        memory_entries = [TranslationMemoryEntry(
+            source=t.entity.string,
+            target=t.string,
+            locale_id=t.locale_id,
+            translation_id=t.pk
+        ) for t in self.translations_to_create if t.plural_form in (None, 0)]
+        TranslationMemoryEntry.objects.bulk_create(memory_entries)
 
     def bulk_update_translations(self):
         if len(self.translations_to_update) > 0:

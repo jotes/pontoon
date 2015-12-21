@@ -27,11 +27,4 @@ class Migration(migrations.Migration):
         CreateExtension('fuzzystrmatch'),
         migrations.RunSQL('CREATE INDEX source_length_idx ON base_translationmemoryentry(CHAR_LENGTH(source))',
                           'DROP INDEX source_length_idx'),
-        # Equivalent function to the Levenshtein.ratio()
-        migrations.RunSQL('''CREATE OR REPLACE FUNCTION levenshtein_ratio(string1 text, string2 text) RETURNS float AS $$
-            BEGIN
-                    RETURN (char_length(string1) + char_length(string2)-levenshtein(string1, string2, 1, 2, 2))::float/(char_length(string1) + char_length(string2));
-            END;
-            $$ LANGUAGE plpgsql;''',
-            'DROP FUNCTION levenshtein_ratio(text, text)')
     ]

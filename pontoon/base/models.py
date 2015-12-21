@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import math
 import os.path
 import urllib
 from urlparse import urlparse
@@ -899,8 +900,11 @@ class Translation(DirtyFieldsMixin, models.Model):
 
             if not self.memory_entries.exists():
                 TranslationMemoryEntry.objects.create(
-                    source=self.entity.string, target=self.string,
-                    entity=self.entity, translation=self, locale=self.locale
+                    source=self.entity.string,
+                    target=self.string,
+                    entity=self.entity,
+                    translation=self,
+                    locale=self.locale
                 )
 
         if not imported:
@@ -957,6 +961,26 @@ class Translation(DirtyFieldsMixin, models.Model):
         }
 
 
+class TranslationMemoryEntryManager(models.Manager):
+    def minimum_levenshtein_ratio(self, text, min_quality=0.7):
+        """
+        Returns entries that match minimal levenshtein_ratio
+        """
+        length = len(text)
+        min_dist = math.ceil(max(length * min_quality, 2))
+        max_dist = math.floor(min(length / min_quality, 1000))
+
+        # Only check entities with similar length
+        entries = self.extra(
+            where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)'
+                  ' AND (char_length(source) + char_length(%s)-levenshtein(source, %s, 1, 2, 2))::float/(char_length(source) + char_length(%s)) > %s'],
+            params=(min_dist, max_dist, text, text, text, min_quality),
+            select={'quality': '(char_length(source) + char_length(%s)-levenshtein(source, %s, 1, 2, 2))::float/(char_length(source) + char_length(%s)) * 100'},
+            select_params=(text, text, text)
+        )
+        return entries
+
+
 class TranslationMemoryEntry(models.Model):
     source = models.TextField()
     target = models.TextField()
@@ -965,6 +989,8 @@ class TranslationMemoryEntry(models.Model):
     translation = models.ForeignKey(Translation, null=True, on_delete=models.SET_NULL,
                                     related_name="memory_entries")
     locale = models.ForeignKey(Locale)
+
+    objects = TranslationMemoryEntryManager()
 
 
 class Stats(models.Model):
