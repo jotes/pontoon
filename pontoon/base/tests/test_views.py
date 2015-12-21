@@ -280,7 +280,6 @@ class TranslateMemoryTests(ViewTestCase):
                      u'source': u'abaa',
                      u'target': u'ccc'}]})
 
-
     def test_exclude_entity(self):
         """
         Exclude entity from results to avoid false positive results.

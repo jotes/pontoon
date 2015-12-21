@@ -1,4 +1,3 @@
-from collections import defaultdict
 import json
 import logging
 import math
@@ -7,6 +6,7 @@ import requests
 import xml.etree.ElementTree as ET
 import urllib
 
+from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib import messages
@@ -713,11 +713,12 @@ def translation_memory(request):
               'AND levenshtein_ratio(source, %s) > %s'],
         params=(min_dist, max_dist, text, min_quality),
         select={'quality': 'levenshtein_ratio(source, %s) * 100'},
-        select_params=(text,)).exclude(entity__pk=int(pk))
+        select_params=(text,))
 
     # Exclude existing entity
     if pk:
         entries = entries.exclude(entity__pk=pk)
+
     entries = list(
             entries
                 .values('source', 'target', 'quality')
