@@ -969,13 +969,17 @@ class TranslationMemoryEntryManager(models.Manager):
         length = len(text)
         min_dist = math.ceil(max(length * min_quality, 2))
         max_dist = math.floor(min(length / min_quality, 1000))
+        levenshtein_ratio_equation = """(
+            (char_length(source) + char_length(%s) - levenshtein(source, %s, 1, 2, 2))::float /
+            (char_length(source) + char_length(%s))
+        )"""
 
         # Only check entities with similar length
         entries = self.extra(
-            where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)'
-                  ' AND (char_length(source) + char_length(%s)-levenshtein(source, %s, 1, 2, 2))::float/(char_length(source) + char_length(%s)) > %s'],
+            where=['(CHAR_LENGTH(source) BETWEEN %s AND %s)',
+                  levenshtein_ratio_equation + ' > %s'],
             params=(min_dist, max_dist, text, text, text, min_quality),
-            select={'quality': '(char_length(source) + char_length(%s)-levenshtein(source, %s, 1, 2, 2))::float/(char_length(source) + char_length(%s)) * 100'},
+            select={'quality': levenshtein_ratio_equation + '* 100'},
             select_params=(text, text, text)
         )
         return entries
