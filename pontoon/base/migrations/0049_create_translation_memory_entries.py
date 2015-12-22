@@ -15,11 +15,11 @@ def create_translation_memory_entries(apps, schema):
             translation_id=translation['pk']
         )
     translations = (
-                    Translation.objects.filter(approved=True, fuzzy=False)
-                                      .filter(models.Q(plural_form__isnull=True) | models.Q(plural_form=0))
-                                      .prefetch_related('entity')
-                                      .values('pk', 'entity__string', 'string', 'locale_id')
-                   )
+        Translation.objects.filter(approved=True, fuzzy=False)
+          .filter(models.Q(plural_form__isnull=True) | models.Q(plural_form=0))
+          .prefetch_related('entity')
+          .values('pk', 'entity__string', 'string', 'locale_id')
+    )
     TranslationMemoryEntry.objects.bulk_create(map(get_memory_entry, translations), 1000)
 
 
