@@ -1,3 +1,4 @@
+from datetime import datetime
 from django_nose.tools import (
     assert_equal,
     assert_false,
@@ -14,7 +15,7 @@ from pontoon.base.tests import (
     UserFactory,
 )
 from pontoon.base.utils import aware_datetime
-from pontoon.sync.tests import FakeCheckoutTestCase
+from pontoon.sync.tests import FakeCheckoutTestCase, RepositorySyncLogFactory
 
 
 class ChangeSetTests(FakeCheckoutTestCase):
@@ -317,6 +318,51 @@ class ChangeSetTests(FakeCheckoutTestCase):
         self.main_db_entity.refresh_from_db()
         assert_true(self.main_db_entity.obsolete)
 
+    def test_no_new_translations(self):
+        """
+        Don't change any resource if there aren't any new translations.
+        """
+        TranslationFactory.create(locale=self.translated_locale, entity=self.main_db_entity,
+            approved=True, date=aware_datetime(2015, 1, 1))
+
+        RepositorySyncLogFactory.create(start_time=aware_datetime(2015, 1, 2),
+            end_time=aware_datetime(2015, 1, 3))
+
+        resource_file = MagicMock()
+        self.changeset.update_vcs_entity(self.translated_locale, self.main_db_entity, MagicMock())
+        self.changeset.vcs_project.resources = {
+            self.main_db_entity.resource.path: resource_file
+        }
+
+        self.changeset.execute_update_vcs()
+        assert not resource_file.save.called
+
+    def test_changed_resources_sync(self):
+        """
+        Synchronization should modify resource files only if there are changed translations.
+        """
+        TranslationFactory.create(locale=self.translated_locale, entity=self.main_db_entity,
+            approved=True, date=aware_datetime(2015, 1, 1))
+
+        resource_file = MagicMock()
+        self.changeset.update_vcs_entity(self.translated_locale, self.main_db_entity, MagicMock())
+        self.changeset.vcs_project.resources = {
+            self.main_db_entity.resource.path: resource_file
+        }
+
+        self.changeset.execute_update_vcs()
+        assert resource_file.save.called
+
+        RepositorySyncLogFactory.create(start_time=aware_datetime(2015, 1, 2),
+            end_time=aware_datetime(2015, 1, 3))
+        self.changeset.execute_update_vcs()
+        assert len(resource_file.save.mock_calls) == 1
+
+        TranslationFactory.create(locale=self.translated_locale, entity=self.main_db_entity,
+            approved=True, date=aware_datetime(2015, 1, 4))
+        self.changeset.execute_update_vcs()
+        assert len(resource_file.save.mock_calls) == 2
+
 
 class AuthorsTests(FakeCheckoutTestCase):
     """
@@ -385,3 +431,21 @@ class AuthorsTests(FakeCheckoutTestCase):
 
         assert_equal(self.changeset.commit_authors_per_locale[self.translated_locale.code],
             [first_author])
+
+
+    def test_no_translations(self):
+        """
+        We don't attribute changed if there aren't any new translations.
+        """
+
+        TranslationFactory.create(locale=self.translated_locale, entity=self.main_db_entity,
+            approved=True, date=aware_datetime(2015, 1, 1))
+
+        RepositorySyncLogFactory.create(start_time=aware_datetime(2015, 1, 2),
+            end_time=aware_datetime(2015, 1, 3))
+
+        self.changeset.update_vcs_entity(self.translated_locale, self.main_db_entity, MagicMock())
+
+        self.changeset.execute_update_vcs()
+
+        assert_equal(self.changeset.commit_authors_per_locale[self.translated_locale.code], [])

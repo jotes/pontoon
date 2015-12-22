@@ -7,6 +7,7 @@ from pontoon.base.models import (
     Locale,
     Translation,
 )
+from pontoon.sync.models import RepositorySyncLog
 from pontoon.base.utils import match_attr
 
 
@@ -89,13 +90,24 @@ class ChangeSet(object):
     def execute_update_vcs(self):
         resources = self.vcs_project.resources
         changed_resources = set()
+        try:
+            latest_sync = (
+                RepositorySyncLog.objects.filter(end_time__isnull=False)
+                    .latest('end_time').start_time
+            )
+        except RepositorySyncLog.DoesNotExist:
+            latest_sync = None
 
         for locale_code, db_entity, vcs_entity in self.changes['update_vcs']:
-            changed_resources.add(resources[db_entity.resource.path])
-
             vcs_translation = vcs_entity.translations[locale_code]
             db_translations = (db_entity.translation_set
-                               .filter(approved=True, locale__code=locale_code))
+                .filter(approved=True, locale__code=locale_code)
+            )
+            if latest_sync:
+                db_translations = db_translations.filter(date__gte=latest_sync)
+
+            if db_translations.exists():
+                changed_resources.add(resources[db_entity.resource.path])
 
             vcs_translation.update_from_db(db_translations)
 
