@@ -15,6 +15,10 @@ urlpatterns = patterns('',
     # Admin
     (r'^admin/', include('pontoon.administration.urls')),
 
+    # Accounts
+    (r'^accounts/', include('django.contrib.auth.urls')),
+    (r'^accounts/', include('registration.backends.model_activation.urls')),
+
     # Sites
     (r'^sites/', include('pontoon.sites.urls')),
 
@@ -29,10 +33,6 @@ urlpatterns = patterns('',
 
     # BrowserID
     (r'', include('django_browserid.urls')),
-
-    # Logout
-    url(r'^signout/$', 'django.contrib.auth.views.logout', {'next_page': '/'},
-        name='signout'),
 
     # Error pages
     url(r'^403/$', TemplateView.as_view(template_name='403.html')),

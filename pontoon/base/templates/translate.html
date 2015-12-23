@@ -121,7 +121,7 @@
             {% endif %}
 
             {% if user.is_authenticated() %}
-            <li class="sign-out"><a href="{{ url('signout') }}"><i class="fa fa-sign-out fa-fw"></i>Sign Out</a></li>
+            <li class="sign-out"><a href="{{ url('logout') }}"><i class="fa fa-sign-out fa-fw"></i>Sign Out</a></li>
             {% else %}
             <li class="sign-in"><i class="fa fa-sign-in fa-fw"></i>Sign in</li>
             {% endif %}

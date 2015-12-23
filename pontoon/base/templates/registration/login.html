@@ -1,0 +1,11 @@
+{% extends "landing.html" %}
+
+
+{% import "widgets/form.html" as Form %}
+
+{% block subtitle %}Sign-in{% endblock subtitle %}
+{% block middle %}
+
+{{ Form.base(form, url('login'), css_class='login') }}
+
+{% endblock %}

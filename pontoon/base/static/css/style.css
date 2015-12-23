@@ -1181,10 +1181,10 @@ body > .container {
 }
 
 .part .tabs nav ul li a span.fa {
-  color: #7BC876;
-  float: none;
-  line-height: 12px;
-  padding-right: 5px;
+      color: #7BC876;
+      float: none;
+      line-height: 12px;
+      padding-right: 5px;
 }
 
 .tabs > section {
@@ -1195,4 +1195,35 @@ body > .container {
   color: #AAAAAA;
   font-style: italic;
   margin-top: 20px;
+}
+
+form.login {
+
+}
+
+form.login ul {
+    list-style: none;
+}
+form.login label {
+    color: #EBEBEB;
+    float: none;
+    display: block;
+    font-size: 24px;
+    line-height: 12px;
+    padding-right: 5px;
+    width: 150px;
+}
+
+form.login label span {
+    margin-top: 10px;
+}
+
+form.login li {
+    display: block;
+    margin: 20px 0;
+}
+
+form.login li input {
+    float: none;
+    height: 30px;
 }

@@ -1,0 +1,14 @@
+{% macro base(form_obj, action, method='POST', css_class='') %}
+    <form method="{{ method }}" action="{{ action }}" class="{{ css_class }}">
+        <ul>
+        {% for field in form_obj %}
+        <li>
+            <label>
+            <span>{{ field.label }}</span>
+            {{ field }}
+            </label>
+        </li>
+        {% endfor %}
+        </ul>
+    </form>
+{% endmacro %}

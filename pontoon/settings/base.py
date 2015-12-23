@@ -112,6 +112,7 @@ INSTALLED_APPS = (
     'pipeline',
     'session_csrf',
     'guardian',
+    'registration',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -141,7 +142,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'match_extension': '',
-            'match_regex': r'^(?!(admin|registration)/).*\.(html|jinja)$',
+            'match_regex': r'^(?!admin/).*\.(html|jinja)$',
             'context_processors': CONTEXT_PROCESSORS,
             'extensions': [
                 'jinja2.ext.do',
@@ -540,3 +541,5 @@ BROKER_POOL_LIMIT = 1  # Limit to one connection per worker
 BROKER_CONNECTION_TIMEOUT = 30  # Give up connecting faster
 CELERY_RESULT_BACKEND = None  # We don't store results
 CELERY_SEND_EVENTS = False  # We aren't yet monitoring events
+
+ACCOUNT_ACTIVATION_DAYS = 7  # User can activate account 7 days after registering
