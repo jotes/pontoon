@@ -314,6 +314,7 @@ var Pontoon = (function (my) {
         $("#entitylist").css('left', -$('#sidebar').width());
         $("#editor").addClass('opened').css('left', 0);
       }
+      self.pushState();
     },
 
 
@@ -424,6 +425,20 @@ var Pontoon = (function (my) {
       });
     },
 
+    /*
+     * Get currently edited entity.
+     * Returns one if editor isn't enabled.
+     */
+    getActiveEntity: function() {
+      var self = this,
+          $editor = $('#editor');
+
+      if ($editor.is('.opened')) {
+        return $editor[0].entity.pk;
+      }
+
+      return;
+    },
 
     /*
      * Search list of entities using the search field value
@@ -2199,18 +2214,19 @@ var Pontoon = (function (my) {
      * Push history state
      */
     pushState: function() {
-      var project = this.getSelectedProject(),
-          locale = this.getSelectedLocale(),
+      var self = this,
+          project = self.getSelectedProject(),
+          locale = self.getSelectedLocale(),
           // Empty if no path defined (i.e. search)
-          paths = requestedPart = this.getSelectedPart(),
+          paths = requestedPart = self.getSelectedPart(),
           search = window.location.search,
           postfix = 'search' + '/' + search;
 
       // Fallback to first available part if no matches found (mistyped URL)
       if (requestedPart) {
-        this.updateCurrentPart();
-        paths = this.currentPart.title;
-        this.updatePartSelector(paths);
+        self.updateCurrentPart();
+        paths = self.currentPart.title;
+        self.updatePartSelector(paths);
         postfix = paths + '/';
       }
 
@@ -2219,18 +2235,29 @@ var Pontoon = (function (my) {
         locale: locale,
         paths: paths,
         search: search
-      },
-      url = '/' + locale + '/' + project + '/' + postfix;
+      };
 
+
+      history.pushState(state, '', self.getCurrentUrl(project, locale, postfix));
+    },
+
+  /*
+   * Return current url using the current state of application.
+   */
+  getCurrentUrl: function(project, locale, postfix) {
+    var self = this,
+        url = '/' + locale + '/' + project + '/' + postfix,
+        activeEntity = self.getActiveEntity();
+
+    if (activeEntity) {
+      url = '/translation/' + locale + '/' + activeEntity + '/';
+    } else if (window.location.pathname === '/' && project === 'pontoon-intro') {
       // Keep homepage URL
-      if (window.location.pathname === '/' && project === 'pontoon-intro') {
-        url = '/';
-      }
-
-      history.pushState(state, '', url);
+      url = '/';
     }
-
-  });
+    return url;
+  }
+  })
 }(Pontoon || {}));
 
 /* Main code */
