@@ -85,6 +85,7 @@ class ChangeSet(object):
         self.execute_create_db()
         self.execute_update_db()
         self.execute_obsolete_db()
+        self.execute_obsolete_paths()
 
         # Apply the built-up changes to the DB
         self.bulk_update_entities()
@@ -233,6 +234,9 @@ class ChangeSet(object):
         (Entity.objects
             .filter(pk__in=self.changes['obsolete_db'])
             .update(obsolete=True))
+
+    def execute_obsolete_paths(self):
+        raise Exception()
 
     def bulk_update_entities(self):
         if len(self.entities_to_update) > 0:

@@ -14,6 +14,7 @@ from pontoon.sync.core import (
     serial_task,
     update_translated_resources,
     update_translations,
+    remove_obsolete_paths
 )
 from pontoon.sync.models import ProjectSyncLog, RepositorySyncLog, SyncLog
 from pontoon.sync.vcs.repositories import CommitToRepositoryException
@@ -69,7 +70,8 @@ def sync_project(self, project_pk, sync_log_pk, no_pull=False, no_commit=False, 
 
         return
 
-    obsolete_vcs = perform_sync_project(db_project, now)
+    obsolete_vcs, removed_paths = perform_sync_project(db_project, now)
+    remove_obsolete_paths(db_project, removed_paths)
 
     for repo in db_project.repositories.all():
         sync_project_repo.delay(
@@ -78,6 +80,7 @@ def sync_project(self, project_pk, sync_log_pk, no_pull=False, no_commit=False, 
             project_sync_log.pk,
             now,
             obsolete_vcs,
+            removed_paths,
             no_pull=no_pull,
             no_commit=no_commit
         )
@@ -87,7 +90,7 @@ def sync_project(self, project_pk, sync_log_pk, no_pull=False, no_commit=False, 
 
 @serial_task(settings.SYNC_TASK_TIMEOUT, base=PontoonTask, lock_key='project={0},repo={1}')
 def sync_project_repo(self, project_pk, repo_pk, project_sync_log_pk, now, obsolete_vcs=None,
-                      no_pull=False, no_commit=False):
+                      removed_paths=None, no_pull=False, no_commit=False):
     db_project = get_or_fail(Project, pk=project_pk,
         message='Could not sync project with pk={0}, not found.'.format(project_pk))
     repo = get_or_fail(Repository, pk=repo_pk,
@@ -118,6 +121,8 @@ def sync_project_repo(self, project_pk, repo_pk, project_sync_log_pk, now, obsol
     for locale in repo.locales:
         try:
             with transaction.atomic():
+                log.debug('SYNC_PROJECT: Synchronize locale: {}'.format(locale.code))
+
                 changeset = ChangeSet(db_project, vcs_project, now, obsolete_vcs)
                 update_translations(db_project, vcs_project, locale, changeset)
                 changeset.execute()

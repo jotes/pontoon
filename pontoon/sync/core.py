@@ -1,6 +1,9 @@
 from functools import wraps
 import logging
 
+import os.path
+import os
+
 from collections import Counter
 
 from celery import shared_task
@@ -26,12 +29,12 @@ def sync_project(db_project, now):
     # Only load source resources for updating entities.
     vcs_project = VCSProject(db_project, locales=[])
     with transaction.atomic():
-        update_resources(db_project, vcs_project)
+        removed_paths = update_resources(db_project, vcs_project)
         changeset = ChangeSet(db_project, vcs_project, now)
         update_entities(db_project, vcs_project, changeset)
         changeset.execute()
 
-    return changeset.changes['obsolete_db']
+    return changeset.changes['obsolete_db'], removed_paths
 
 
 def serial_task(timeout, lock_key="", **celery_args):
@@ -93,14 +96,21 @@ def update_entities(db_project, vcs_project, changeset):
 def update_resources(db_project, vcs_project):
     """Update the database on what resource files exist in VCS."""
     relative_paths = vcs_project.resources.keys()
-    db_project.resources.exclude(path__in=relative_paths).delete()
+    log.debug('UPDATE_RESOURCES: Scanning {}'.format(vcs_project.source_directory_path()))
+    removed_resources = db_project.resources.exclude(path__in=relative_paths)
+    removed_paths = removed_resources.values_list('path', flat=True)
+
+    for path in removed_paths:
+        log.debug('UPDATE_RESOURCES: Removed path: {}'.format(path))
+    #removed_resources.delete()
 
     for relative_path, vcs_resource in vcs_project.resources.items():
         resource, created = db_project.resources.get_or_create(path=relative_path)
         resource.format = Resource.get_path_format(relative_path)
         resource.total_strings = len(vcs_resource.entities)
         resource.save()
-
+        log.debug('UPDATE_RESOURCES: Updated resource file: {} with {} strings.'.format(resource.path, resource.total_strings))
+    return removed_paths
 
 def update_translations(db_project, vcs_project, locale, changeset):
     for key, db_entity, vcs_entity in collect_entities(db_project, vcs_project):
@@ -199,3 +209,18 @@ def commit_changes(db_project, vcs_project, changeset, locale):
     locale_path = locale_directory_path(vcs_project.checkout_path, locale.code)
     repo = db_project.repository_for_path(locale_path)
     repo.commit(commit_message, commit_author, locale_path)
+
+
+def remove_obsolete_paths(db_project, removed_paths):
+    """Remove all paths that weren't discovered in the source locale."""
+    vcs_project = VCSProject(db_project, [])
+
+    for path in removed_paths:
+        for locale in db_project.locales.all():
+            file_path = os.path.join(
+                locale_directory_path(vcs_project.checkout_path, locale.code),
+                path
+            )
+            if os.path.exists(file_path):
+                log.debug('REMOVE_OBSOLETE_FILES: Remove {} for {}.'.format(path, locale.code))
+                os.remove(file_path)
