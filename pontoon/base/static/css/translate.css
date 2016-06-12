@@ -1352,6 +1352,15 @@ p#sign-in-required > a#sidebar-signin {
   top: 43px;
 }
 
+#helpers > section.other-locales {
+  padding-top: 5px;
+}
+
+#helpers > section.other-locales .settings {
+  text-align: right;
+  padding-right: 5px;
+}
+
 #helpers > section.machinery .search-wrapper {
   margin: 0 10px 10px;
 }

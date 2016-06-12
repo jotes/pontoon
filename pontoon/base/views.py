@@ -30,7 +30,7 @@ from django.http import (
     JsonResponse,
 )
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.datastructures import MultiValueDictKeyError
 from django.views.decorators.csrf import csrf_exempt
@@ -1245,3 +1245,22 @@ def request_projects(request, locale):
 def get_csrf(request):
     """Get CSRF token."""
     return HttpResponse(request.csrf_token)
+
+
+@login_required
+def user_locales_settings(request):
+    """View responsible for user settings for given locales like e.g. sorting order."""
+    if request.method == 'POST':
+        form = forms.UserLocalesSettings(request.POST, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Updated user preferences.')
+            return redirect('/')
+
+    selected_locales = [pl.locale for pl in request.user.profile.preferredlocale_set.all()]
+    available_locales = Locale.objects.exclude(pk__in=[locale.pk for locale in selected_locales])
+
+    return render(request, 'user_locales_settings.html', {
+            'available_locales': available_locales,
+            'selected_locales': selected_locales,
+        })

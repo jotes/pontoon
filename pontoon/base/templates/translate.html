@@ -17,7 +17,9 @@
      {% if user.profile and user.profile.force_suggestions %}data-force-suggestions="{{ user.profile.force_suggestions }}"{% endif %}
      {% if user.translated_locales %}data-user-translated-locales="{{ user.translated_locales|to_json() }}"{% endif %}
      {% if perms.base.can_manage %}data-manager="true"{% endif %}
-     {% if authors %}data-authors="{{ authors|to_json() }}"{% endif %}
+     data-authors="{{ authors|to_json() }}"
+     {% if not user.is_anonymous and user.profile.preferred_locales_map %}data-preferred-locales="{{ user.profile.preferred_locales_map|to_json() }}"{% endif %}
+     >
 </div>
 
 <!-- Main toolbar -->
@@ -310,6 +312,11 @@
         </section>
 
         <section class="other-locales">
+          {% if user.is_authenticated() %}
+          <div class="settings">
+            <a href="{{ url('pontoon.user_locales_settings') }}">⚙ Settings</a>
+          </div>
+          {% endif %}
           <ul></ul>
         </section>
       </div>

@@ -275,6 +275,10 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'css/intro.min.css',
     },
+    'forms': {
+        'source_filenames': ('css/forms.css',),
+        'output_filename': 'css/forms.min.css',
+    },
 }
 
 PIPELINE_JS = {
@@ -324,6 +328,13 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/search.min.js',
     },
+    'forms': {
+        'source_filenames': (
+            'js/jquery-ui-1.11.4.min.js',
+            'js/forms.js',
+        ),
+        'output_filename': 'js/forms.min.js',
+    }
 }
 
 # Cache config

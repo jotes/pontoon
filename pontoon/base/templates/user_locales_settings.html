@@ -1,0 +1,31 @@
+{% extends "landing.html" %}
+
+{% import 'widgets/locales.html' as locales %}
+
+{% block extend_css %}
+  {{ super() }}
+
+  {% stylesheet 'forms' %}
+{% endblock %}
+
+{% block extend_js %}
+  {{ super() }}
+  {% javascript 'forms' %}
+{% endblock %}
+
+{% block title %}Pontoon &middot; User locale settings{% endblock %}
+{% block subtitle %}Select your preferred locales{% endblock %}
+
+{% block middle %}
+  <form method="POST" action="{{ url('pontoon.user_locales_settings') }}" class="user-locales-settings">
+    {% csrf_token %}
+
+    <div class="clearfix">
+      {{ locales.select(available_locales, selected_locales, form_field='preferred_locales', sortable=True) }}
+    </div>
+    <div class="controls">
+      <a class="cancel" href="/">Cancel</a>
+      <button class="button">Save</button>
+    </div>
+  </form>
+{% endblock %}

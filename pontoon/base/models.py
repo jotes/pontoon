@@ -161,6 +161,28 @@ class UserProfile(models.Model):
     quality_checks = models.BooleanField(default=True)
     force_suggestions = models.BooleanField(default=False)
 
+    preferred_locales = models.ManyToManyField(
+        'Locale',
+        through='PreferredLocale',
+        through_fields=('user_profile', 'locale'),
+    )
+    """A list of locales that contributor is actively working on"""
+
+    @property
+    def preferred_locales_map(self):
+        return dict(self.preferredlocale_set.values_list('locale__code', 'position'))
+
+
+class PreferredLocale(models.Model):
+    locale = models.ForeignKey('Locale')
+    user_profile = models.ForeignKey('UserProfile')
+
+    position = models.PositiveIntegerField(null=False)
+
+    class Meta:
+        unique_together = (('locale', 'user_profile', 'position'),)
+        ordering = ('-position',)
+
 
 class AggregatedStats(models.Model):
     total_strings = models.PositiveIntegerField(default=0)
