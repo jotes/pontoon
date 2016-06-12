@@ -1,3 +1,5 @@
+import json
+
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.test import RequestFactory
@@ -47,6 +49,45 @@ class UserProfileTests(TestCase):
         response = self.client.post('/save-user-name/', {'first_name': 'contributor'})
         assert_equal(response.status_code, 200)
         assert_equal(response.content, 'ok')
+
+    def test_user_preferred_locales(self):
+        locale1, locale2, locale3 = LocaleFactory.create_batch(3)
+        response = self.client.get('/user-locales-settings/')
+        assert_equal(response.status_code, 200)
+
+        response = self.client.post('/user-locales-settings/', {
+            'preferred_locales': json.dumps([
+                [locale2.pk, 0],
+                [locale1.pk, 1],
+                [locale3.pk, 2],
+            ])
+        })
+        assert_equal(response.status_code, 302)
+        assert_equal(
+            list(self.user.profile.preferredlocale_set.values_list('locale__pk', flat=True)),
+            [locale3.pk, locale1.pk, locale2.pk]
+        )
+
+        # Test if you can clear all locales
+        response = self.client.post('/user-locales-settings/', {
+            'preferred_locales': json.dumps([])
+        })
+        assert_equal(response.status_code, 302)
+        assert_equal(list(self.user.profile.preferredlocale_set.all()), [])
+
+        # Test if form handles duplicated locales
+        response = self.client.post('/user-locales-settings/', {
+            'preferred_locales': json.dumps([
+                [locale2.pk, 0],
+                [locale1.pk, 1],
+                [locale2.pk, 2],
+            ])
+        })
+        assert_equal(response.status_code, 302)
+        assert_equal(
+            list(self.user.profile.preferredlocale_set.values_list('locale__pk', flat=True)),
+            [locale2.pk, locale1.pk]
+        )
 
 
 class TranslateTests(TestCase):

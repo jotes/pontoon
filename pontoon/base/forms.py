@@ -1,8 +1,9 @@
 import os
 
-from django import forms
+import json
 
-from pontoon.base.models import User
+from django import forms
+from pontoon.base.models import User, UserProfile, PreferredLocale
 from pontoon.sync.formats import SUPPORTED_FORMAT_PARSERS
 
 
@@ -60,3 +61,30 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('first_name',)
+
+
+class UserLocalesSettings(forms.ModelForm):
+    preferred_locales = forms.CharField()
+    class Meta:
+        model = UserProfile
+        fields = ('preferred_locales',)
+
+    def clean_preferred_locales(self):
+        try:
+            return json.loads(self.cleaned_data['preferred_locales'])
+        except ValueError:
+            raise forms.ValidationError('')
+
+    def save(self):
+        self.instance.preferred_locales.clear()
+        preferred_locales = []
+
+        for locale_id, position in dict((self.cleaned_data['preferred_locales'])).items():
+            preferred_locales.append(PreferredLocale(
+                locale_id=locale_id,
+                user_profile=self.instance,
+                position=position,
+            ))
+
+        PreferredLocale.objects.bulk_create(preferred_locales)
+        self.instance.save()

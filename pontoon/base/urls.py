@@ -152,6 +152,8 @@ urlpatterns = [
         name='pontoon.save_user_name'),
     url(r'^csrf/$', views.get_csrf,
         name='pontoon.csrf'),
+    url(r'^user-locales-settings/', views.user_locales_settings,
+        name='pontoon.user_locales_settings'),
 
     # Team page: Must be at the end
     url(r'^(?P<locale>[A-Za-z0-9\-\@\.]+)/$',
