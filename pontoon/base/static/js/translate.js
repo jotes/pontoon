@@ -162,14 +162,14 @@ var Pontoon = (function (my) {
             count = data.length;
 
             var sortedItems = list.find("li").sort(function(a, b) {
-               var localeMap = Pontoon.user.preferredLocales,
+               var localeMap = Pontoon.user.localesOrder,
                    localeA = $(a).find('p').prop('lang'),
                    localeB = $(b).find('p').prop('lang');
 
                var valA = localeMap[localeA],
-                   valB = localeMap[localeaB];
-
-               if (typeof valA == 'undefined' && typeof valB == 'undefined') {
+                   valB = localeMap[localeB];
+               debugger;
+               if (valA == -1 && valB == -1 ){
                  return localeA > localeB;
                } else {
                  valA = valA || 0;
@@ -3064,14 +3064,12 @@ window.onpopstate = function(e) {
   }
 };
 
-var preferredLocales = $('#server').data('preferred-locales');
-
 Pontoon.user = {
   email: $('#server').data('email') || '',
   name: $('#server').data('name') || '',
   forceSuggestions: $('#server').data('force-suggestions') === 'True' ? true : false,
   manager: $('#server').data('manager'),
-  preferredLocales: preferredLocales ? preferredLocales : {}
+  localesOrder: $('#server').data('locales-order') || {},
 };
 
 Pontoon.attachMainHandlers();

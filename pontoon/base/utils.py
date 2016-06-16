@@ -545,4 +545,11 @@ def latest_datetime(datetimes):
 
     min_datetime = timezone.make_aware(datetime.min)
     datetimes = map(lambda d: d or min_datetime, datetimes)
-    return max(datetimes)
+
+
+def commajoin(*items):
+    """
+    Small helper function that joins all items by comma and maps types
+    of items into strings.
+    """
+    return ','.join(map(str, items))

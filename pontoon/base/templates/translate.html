@@ -18,7 +18,7 @@
      {% if user.translated_locales %}data-user-translated-locales="{{ user.translated_locales|to_json() }}"{% endif %}
      {% if perms.base.can_manage %}data-manager="true"{% endif %}
      data-authors="{{ authors|to_json() }}"
-     {% if not user.is_anonymous and user.profile.preferred_locales_map %}data-preferred-locales="{{ user.profile.preferred_locales_map|to_json() }}"{% endif %}
+     {% if user.is_authenticated and user.profile.locales_order %}data-locales-order="{{ user.profile.locales_codes|to_json() }}"{% endif %}
      >
 </div>
 
@@ -314,7 +314,7 @@
         <section class="other-locales">
           {% if user.is_authenticated() %}
           <div class="settings">
-            <a href="{{ url('pontoon.user_locales_settings') }}">⚙ Settings</a>
+            <a href="{{ url('pontoon.user_locales_settings') }}">⚙ Select preferred locales.</a>
           </div>
           {% endif %}
           <ul></ul>

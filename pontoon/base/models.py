@@ -9,6 +9,7 @@ from urlparse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group, UserManager
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, Prefetch, F, Q, Case, When
@@ -168,27 +169,22 @@ class UserProfile(models.Model):
     quality_checks = models.BooleanField(default=True)
     force_suggestions = models.BooleanField(default=False)
 
-    preferred_locales = models.ManyToManyField(
-        'Locale',
-        through='PreferredLocale',
-        through_fields=('user_profile', 'locale'),
+    locales_order = ArrayField(
+            models.PositiveIntegerField(),
+            default=list,
+            blank=True,
     )
-    """A list of locales that contributor is actively working on"""
+    """ Defines the order of locales displayed in locale tab."""
 
     @property
-    def preferred_locales_map(self):
-        return dict(self.preferredlocale_set.values_list('locale__code', 'position'))
+    def sorted_locales(self):
+        locales = Locale.objects.filter(pk__in=self.locales_order)
+        return sorted(locales, key=lambda locale: self.locales_order.index(locale.pk))
 
-
-class PreferredLocale(models.Model):
-    locale = models.ForeignKey('Locale')
-    user_profile = models.ForeignKey('UserProfile')
-
-    position = models.PositiveIntegerField(null=False)
-
-    class Meta:
-        unique_together = (('locale', 'user_profile'),)
-        ordering = ('-position',)
+    @property
+    def locales_codes(self):
+        """Return the codes of locales that contributor set in his preferences."""
+        return [l.code for l in self.sorted_locales]
 
 
 class AggregatedStats(models.Model):

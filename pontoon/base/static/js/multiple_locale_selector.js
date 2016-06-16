@@ -8,10 +8,10 @@
         $selectedLocalesField = $selectedList.find('input[type=hidden]'),
         selectedLocalesLength = $selectedList.find('li[data-id]').length,
         selectedLocales = $selectedList.find('li[data-id]').map(function(index) {
-           return [[$(this).data('id'), selectedLocalesLength - index]];
+           return $(this).data('id');
         }).get();
 
-    $selectedLocalesField.val(JSON.stringify(selectedLocales));
+    $selectedLocalesField.val(selectedLocales.join());
   };
 
   // Choose locales

@@ -592,6 +592,13 @@ def batch_edit_translations(request):
 @require_AJAX
 def get_translations_from_other_locales(request):
     """Get entity translations for all but specified locale."""
+    return JsonResponse([
+        {'locale__code': 'sr', 'locale__name': 'serbian', 'text': 'aserbian'},
+        {'locale__code': 'ak', 'locale__name': 'serbian', 'text': 'aserbian'},
+        {'locale__code': 'eu', 'locale__name': 'serbian', 'text': 'aserbian'},
+        {'locale__code': 'pl', 'locale__name': 'pl', 'text': 'aserbian'},
+        {'locale__code': 'de', 'locale__name': 'de', 'text': 'aserbian'},
+        ], safe=False)
     try:
         entity = request.GET['entity']
         locale = request.GET['locale']
@@ -1257,9 +1264,8 @@ def user_locales_settings(request):
             messages.success(request, 'Updated user preferences.')
             return redirect('/')
 
-    selected_locales = [pl.locale for pl in request.user.profile.preferredlocale_set.all()]
-    available_locales = Locale.objects.exclude(pk__in=[locale.pk for locale in selected_locales])
-
+    selected_locales = list(request.user.profile.sorted_locales)
+    available_locales = Locale.objects.exclude(pk__in=[l.pk for l in selected_locales])
     return render(request, 'user_locales_settings.html', {
             'available_locales': available_locales,
             'selected_locales': selected_locales,
