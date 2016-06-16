@@ -677,6 +677,32 @@ def delete_translation(request):
     })
 
 
+@require_POST
+@require_AJAX
+@transaction.atomic
+@login_required
+def unapprove_translation(request):
+    """Unapproved already approved translation."""
+    try:
+        translation = get_object_or_404(Translation, pk=request.POST['translation'])
+        paths = request.POST.getlist('paths[]')
+    except MultiValueDictKeyError as e:
+        return HttpResponseBadRequest('Bad request: {error}'.format(error=e))
+
+    if not request.user.has_perm('base.can_translate_locale', translation.locale):
+        return HttpResponseForbidden("Not privileged to unapprove this translation.")
+
+    translation.approved = False
+    translation.approved_user = None
+    translation.approved_date = None
+    translation.save()
+
+    return JsonResponse({
+        'translation': translation.serialize(),
+        'stats': TranslatedResource.objects.stats(translation.resource.project, paths, translation.locale)
+    })
+
+
 @anonymous_csrf_exempt
 @require_POST
 @require_AJAX

@@ -1095,13 +1095,11 @@ var Pontoon = (function (my) {
 
       // Approve and delete translations
       $('#helpers .history').on('click', 'menu button', function (e) {
-        var button = $(this);
-        if (button.is('.approve') && button.parents('li.translated').length > 0) {
-          return;
-        }
+        var button = $(this),
+            isApproved = button.parents('li.translated').length > 0;
 
         // Approve
-        if (button.is('.approve')) {
+        if (button.is('.approve') && !isApproved) {
           button.parents('li').click();
 
           var entity = self.getEditorEntity(),
@@ -1110,6 +1108,9 @@ var Pontoon = (function (my) {
           // Mark that user approved translation instead of submitting it
           self.approvedNotSubmitted = true;
           self.updateOnServer(entity, translation, false, true);
+          return;
+        } else if (button.is('.approve') && isApproved) {
+          self.unapproveTranslation(entity, translation);
           return;
         }
 
@@ -1479,7 +1480,23 @@ var Pontoon = (function (my) {
       this.updateEntityUI(entity);
     },
 
-
+    /*
+     * Unapprove given translation.
+     */
+    unapproveTranslation: function (entity, translation, paths) {
+        var query = {
+            translation: translation.pk,
+            entity: entity.pk,
+            paths: paths,
+        };
+        $.post(query)
+         .success(function() {
+             self.endLoader('Translation has been unapproved.');
+         })
+        .error(function() {
+            self.endLoader("Can't unapprove translation.");
+        });
+    }
     /*
      * Update all translations in localStorage on server
      */
