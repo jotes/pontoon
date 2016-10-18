@@ -5,6 +5,8 @@ See base.py for the ParsedResource base class.
 """
 import os.path
 
+from pkg_resources import iter_entry_points
+
 from pontoon.sync.formats import lang, po, silme, xliff, l20n, ftl
 
 # To add support for a new resource format, add an entry to this dict
@@ -22,6 +24,14 @@ SUPPORTED_FORMAT_PARSERS = {
     '.l20n': l20n.parse,
     '.ftl': ftl.parse,
 }
+
+
+
+for entry_point in iter_entry_points(group='pontoon.sync.plugins', name=None):
+    entry = entry_point.load()
+    if not hasattr(entry_point, 'plugin'):
+        for supported_format in entry.supported_formats:
+            SUPPORTED_FORMAT_PARSERS[supported_format] = entry.parse
 
 
 def parse(path, source_path=None, locale=None):

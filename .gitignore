@@ -28,3 +28,4 @@ tmp/*
 docs/_build
 venv
 /media/
+tags
