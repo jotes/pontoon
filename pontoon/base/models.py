@@ -1384,10 +1384,7 @@ class Entity(DirtyFieldsMixin, models.Model):
         entities = Entity.objects.all()
 
         def append_filters(qs):
-            if entities:
-                return qs.filter(pk__in=entities)
-            else:
-                return qs
+            return qs.filter(pk__in=entities)
 
         if statuses:
             entities = entities.filter_statuses(locale, statuses.split(','))
@@ -1398,15 +1395,15 @@ class Entity(DirtyFieldsMixin, models.Model):
         if time:
             if re.match('^[0-9]{12}-[0-9]{12}$', time):
                 start, end = utils.parse_time_interval(time)
-                entities = entities.between_time_interval(locale, start, end)
+                entities = append_filters(Entity.objects.between_time_interval(locale, start, end))
 
             else:
                 raise ValueError(time)
 
         if authors:
-            entities = entities.authored_by(locale, authors.split(','))
+            entities = append_filters(Entity.objects.authored_by(locale, authors.split(',')))
 
-        entities = Entity.objects.filter(
+        entities = entities.filter(
             resource__project=project,
             resource__translatedresources__locale=locale,
             obsolete=False
