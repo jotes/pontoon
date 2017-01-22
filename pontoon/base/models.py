@@ -31,7 +31,7 @@ from pontoon.sync.vcs.repositories import (
     update_from_vcs,
     PullFromRepositoryException,
 )
-from pontoon.base import utils
+from pontoon.base import utils, locales
 from pontoon.sync import KEY_SEPARATOR
 
 from urlparse import urlparse
@@ -1219,14 +1219,22 @@ class EntityQuerySet(models.QuerySet):
     def filter_statuses(self, locale, statuses):
         sanitized_statuses = filter(lambda s: s in self.user_entity_filters, statuses)
         if sanitized_statuses:
-            return reduce(lambda x, y: x | y, [getattr(Entity.objects, s)() for s in sanitized_statuses])
+            # @TODO: move it into separate methods
+            if locale.code in settings.NEW_FILTERS_LOCALES:
+                return reduce(lambda x, y: x | y, [Q(**{'entityfilters__{}_status'.format(locale.code): s}) for s in sanitized_statuses])
+            else:
+                return reduce(lambda x, y: x | y, [getattr(Entity.objects, s)() for s in sanitized_statuses])
         return Q()
 
     def filter_extra(self, locale, extra):
         sanitized_extras = filter(lambda f: f in self.user_extra_filters, extra)
 
         if sanitized_extras:
-            return reduce(lambda x, y: x | y, [getattr(Entity.objects, s.replace('-', '_'))() for s in sanitized_extras])
+            # @TODO: move it into separete methods
+            if locale.code in settings.NEW_FILTERS_LOCALES:
+                return reduce(lambda x, y: x | y, [Q(**{'entityfilters__{}_{}'.format(locale.code,s.replace('-', '_')): True}) for s in sanitized_extras])
+            else:
+                return reduce(lambda x, y: x | y, [getattr(Entity.objects, s.replace('-', '_'))() for s in sanitized_extras])
         return Q()
 
     def with_status_counts(self, locale):
@@ -1273,7 +1281,7 @@ class EntityQuerySet(models.QuerySet):
                         translation__plural_form__isnull=False, translation__string=F('string_plural')), then=1
                     ), output_field=models.IntegerField(), default=0
                 )
-            )
+            ),
         )
 
     def missing(self):
@@ -1439,7 +1447,10 @@ class Entity(DirtyFieldsMixin, models.Model):
             post_filters.append(Entity.objects.filter_extra(locale, extra.split(',')))
 
         if post_filters:
-            entities = entities.with_status_counts(locale).filter(Q(*post_filters))
+            if locale.code in settings.NEW_FILTERS_LOCALES:
+                entities = entities.filter(*post_filters)
+            else:
+                entities = entities.with_status_counts(locale).filter(Q(*post_filters))
 
         entities = entities.filter(
             resource__translatedresources__locale=locale,
@@ -1518,6 +1529,38 @@ class ChangedEntityLocale(models.Model):
 
     class Meta:
         unique_together = ('entity', 'locale')
+
+
+class EntityFilters(models.Model):
+    """
+    EntityFilters contains computed filters for every value.
+    Because of the performance reasons, every entity has one additional row in database.
+    However, a single row contains state rows
+
+    """
+    entity = models.ForeignKey(Entity)
+    status_choices = (
+        ('missing', 'missing'),
+        ('fuzzy', 'fuzzy'),
+        ('translated', 'translated'),
+        ('suggested', 'suggested')
+    )
+    extra_filters = (
+        'unchanged',
+        'has_suggestions'
+    )
+
+for locale_code in locales.CODES:
+    code = locale_code.lower().replace('-', '_')
+    EntityFilters.add_to_class('{}_status'.format(code), models.CharField(
+        max_length=10,
+        choices=EntityFilters.status_choices,
+        db_index=True,
+        null=True,
+        )
+    )
+    for filter_ in EntityFilters.extra_filters:
+        EntityFilters.add_to_class('{}_{}'.format(code, filter_), models.NullBooleanField(db_index=True, null=True))
 
 
 def extra_default():

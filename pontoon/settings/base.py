@@ -687,3 +687,7 @@ else:
     JS_TRUSTED_ORIGINS = [
         SITE_URL,
     ]
+
+# Contains list of locales that will use new, precalculated filters of entitiets
+NEW_FILTERS_LOCALES = ['sl']
+
