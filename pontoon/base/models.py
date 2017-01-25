@@ -1530,15 +1530,45 @@ class ChangedEntityLocale(models.Model):
     class Meta:
         unique_together = ('entity', 'locale')
 
+class EntityFiltersManager(models.Manager):
+    def update_filters_state(self, entity, locale):
+        """
+        """
+        filters_instance = self.get_queryset().get(entity=entity)
+        setattr(filters_instance, '{}_status'.format(locale.code), self.get_entity_status(entity, locale))
+        setattr(filters_instance, '{}_unchanged'.format(locale.code), self.is_unchanged(entity, locale))
+        setattr(filters_instance, '{}_has_suggestions'.format(locale.code), self.has_suggestions(entity, locale))
+
+    def is_unchanged(self, entity, locale):
+        return False
+
+    def has_suggestions(self, entity, locale):
+        return False
+
+    def get_entity_status(self, entity, locale):
+        expected_count = locale.nplurals if entity.string_plural else 1
+        translations = entity.translations.filter(locale=locale)
+
+        if expected_count == translations.filter(approved=True).count():
+            return 'translated'
+
+        elif expected_count == translations.filter(fuzzy=True).count():
+            return 'fuzzy'
+
+        elif translations.filter(approved=False, fuzzy=False) > 0:
+            return 'suggested'
+
+        else:
+            return 'missing'
+
 
 class EntityFilters(models.Model):
     """
     EntityFilters contains computed filters for every value.
     Because of the performance reasons, every entity has one additional row in database.
-    However, a single row contains state rows
-
+    A single entry contains states of entity for every available locale.
     """
-    entity = models.ForeignKey(Entity)
+    entity = models.OneToOneField(Entity)
     status_choices = (
         ('missing', 'missing'),
         ('fuzzy', 'fuzzy'),
@@ -1549,6 +1579,8 @@ class EntityFilters(models.Model):
         'unchanged',
         'has_suggestions'
     )
+
+    objects = EntityFiltersManager()
 
 for locale_code in locales.CODES:
     code = locale_code.lower().replace('-', '_')

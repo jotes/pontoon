@@ -8,6 +8,8 @@ from django.dispatch import receiver
 
 from pontoon.base import errors
 from pontoon.base.models import (
+    Entity,
+    EntityFilters,
     Locale,
     Project,
     ProjectLocale,
@@ -136,3 +138,16 @@ def assign_group_permissions(sender, **kwargs):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=Entity)
+def create_entity_filters(sender, instance, created, **kwargs):
+    """
+    Every entity requires an entity filters objects.
+    """
+    if not created:
+        return
+
+    EntityFilters.objects.get_or_create(entity=instance)
+
+
