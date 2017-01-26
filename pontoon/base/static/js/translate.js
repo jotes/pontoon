@@ -338,6 +338,39 @@ var Pontoon = (function (my) {
 
 
     /*
+     * Mark Terminology terms in source string
+     *
+     * text Source string
+     */
+    markTerms: function (text) {
+      // TODO: Instead of hardcoding, retrieve a list of terms dynamically
+      var terms = [{
+        original: "web",
+        partOfSpeech: "noun",
+        description: "The World Wide Web is the part of the Internet that contains websites and webpages.",
+        translation: "splet"
+      }];
+
+      for (var i=0; i<terms.length; i++) {
+        var term = terms[i],
+            re = new RegExp(term.original, 'gi');
+
+        // TODO: Make sure only actual text is marked (avoid placeables and previously marked terms)
+        text = text.replace(re, '<mark class="term" ' +
+          'data-original="' + term.original +
+          '" data-part-of-speech="' + term.partOfSpeech +
+          '" data-description="' + term.description +
+          '" data-translation="' + term.translation +
+          // TODO: Instead of the title attribute, build rich tooltip using data-* attributes
+          '" title="' + term.translation + ' (' + term.partOfSpeech + '): ' + term.description +
+        '">$&</mark>');
+      }
+
+      return text;
+    },
+
+
+    /*
      * Move cursor to the beginning of translation textarea
      */
     moveCursorToBeginning: function () {
@@ -431,8 +464,10 @@ var Pontoon = (function (my) {
         .focus();
       $('.warning-overlay:visible .cancel').click();
 
-      // Original string and plurals
-      $('#original').html(entity.marked);
+      // Original string
+      $('#original').html(self.markTerms(entity.marked));
+
+      // Plurals
       $('#source-pane').removeClass('pluralized');
       $('#plural-tabs li').css('display', 'none');
 
@@ -473,7 +508,7 @@ var Pontoon = (function (my) {
         // Show plural string to locales with a single plural form (includes variable identifier)
         } else {
           $('#source-pane h2').html('Plural').show();
-          $('#original').html(entity.marked_plural);
+          $('#original').html(self.markTerms(entity.marked_plural));
         }
       }
 
@@ -1525,8 +1560,8 @@ var Pontoon = (function (my) {
         });
       });
 
-      // Insert placeable at cursor, replace selection or at the end if not focused
-      $('#original').on('click', '.placeable', function (e) {
+      // Insert placeable/term at cursor, replace selection or at the end if not focused
+      $('#original').on('click', '.placeable, .term', function (e) {
         e.preventDefault();
 
         // Ignore for anonymous users
@@ -1537,10 +1572,10 @@ var Pontoon = (function (my) {
         var textarea = $('#translation'),
             selectionStart = textarea.prop('selectionStart'),
             selectionEnd = textarea.prop('selectionEnd'),
-            placeable = $(this).text(),
-            cursorPos = selectionStart + placeable.length,
+            value = $(this).is('.placeable') ? $(this).text() : $(this).data('translation'),
+            cursorPos = selectionStart + value.length,
             before = textarea.val(),
-            after = before.substring(0, selectionStart) + placeable + before.substring(selectionEnd);
+            after = before.substring(0, selectionStart) + value + before.substring(selectionEnd);
 
         textarea.val(after).focus();
         textarea[0].setSelectionRange(cursorPos, cursorPos);
@@ -1560,7 +1595,7 @@ var Pontoon = (function (my) {
             source = entity.translation[i].string;
 
         $('#source-pane h2').html(title).show();
-        $('#original').html(marked);
+        $('#original').html(self.markTerms(marked));
 
         $('#translation').val(source).focus();
         $('#translation-length .original-length').html(original.length);

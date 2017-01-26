@@ -42,6 +42,15 @@ mark.search {
   border-radius: 2px;
 }
 
+mark.term {
+  background: transparent;
+  border-bottom: 1px dotted #FFA10F;
+  color: inherit;
+  cursor: pointer;
+  font-style: normal;
+  font-weight: normal;
+}
+
 #source {
   display: none;
   height: 0;
