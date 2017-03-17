@@ -1,5 +1,6 @@
 import os
 import requests
+import sys
 from bs4 import BeautifulSoup
 
 from django.core.management.base import BaseCommand, CommandError
@@ -59,7 +60,13 @@ class Command(BaseCommand):
         print 'Discovered {} available locales.'.format(len(available_locales))
 
         if locale:
-            locales_to_download = {locale.lower(): available_locales[locale.lower()]}
+            try:
+                locales_to_download = {locale.lower(): available_locales[locale.lower()]}
+            except KeyError:
+                print "Can't find locale: {}".format(locale.lower())
+                print "Available locales:"
+                print ', '.join(sorted(available_locales))
+                sys.exit()
         else:
             locales_to_download = available_locales
 
