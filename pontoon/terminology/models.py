@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import logging
 
+from bulk_update.helper import bulk_update
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 
@@ -14,17 +15,27 @@ class TermManager(models.Manager):
 
         :param VCSTerm vcs_terms: a list of terms imported from the filesystem/vcs.
         """
+        def update_db_translations(db_translations, vcs_translations):
+            db_translations.update(vcs_translations)
+
+        db_terms = {}
+        for term in Term.objects.all():
+            db_terms[term.term_id] = term
+
         new_terms = []
+        update_terms = []
         updated_records = 0
         for term in vcs_terms:
             try:
-                db_term = self.get(term_id=term.id)
+                # import ipdb; ipdb.set_trace()
+
+                db_term = db_terms[term.id] #self.get(term_id=term.id)
                 db_term.note = term.note
                 db_term.description = term.description
-                db_term.translations.update(term.translations)
-                db_term.save()
+                update_db_translations(db_term.translations, term.translations)
+                update_terms.append(db_term)
                 updated_records += 1
-            except Term.DoesNotExist:
+            except KeyError:
                 new_terms.append(
                     Term(
                         term_id=term.id,
@@ -34,12 +45,14 @@ class TermManager(models.Manager):
                         translations=term.translations,
                     )
                 )
-        log.info('Updated {} existing terms.'.format(updated_records))
+
+        if update_terms:
+            bulk_update(update_terms, update_fields=['note', 'description', 'translations'], batch_size=10)
+            log.info('Updated {} existing terms.'.format(updated_records))
 
         if new_terms:
             self.bulk_create(new_terms, 1000)
-
-        log.info('Inserted {} new terms.'.format(len(new_terms)))
+            log.info('Inserted {} new terms.'.format(len(new_terms)))
 
 
 class Term(models.Model):
@@ -63,3 +76,6 @@ class Term(models.Model):
     translations = JSONField()
 
     objects = TermManager()
+
+    def __unicode__(self):
+        return self.source_term

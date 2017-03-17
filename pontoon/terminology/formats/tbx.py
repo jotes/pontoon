@@ -116,7 +116,7 @@ class TBXVCSTerm(TBXObject):
 
     @property
     def source_term(self):
-        return self.source_langset.terms[0]
+        return self.source_langset.translations[0]
 
     @property
     def source_text(self):
@@ -133,7 +133,7 @@ class TBXVCSTerm(TBXObject):
     @property
     def translations(self):
         trans = {}
-        for langset in self.entryTerm.langsets.values():
+        for langset in self.langsets.values():
             for term in langset.translations:
                 trans.setdefault(langset.lang, []).append(term.text)
 
