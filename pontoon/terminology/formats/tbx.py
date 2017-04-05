@@ -1,19 +1,14 @@
 """
 This module tries to implement subset of The TBX Basic format.
 
-First version of the implementation allows to import files download
+First version of the implementation allows to import files downloaded
 from The Microsoft Language Portal.
 
 However, there's a lot corner-cases that aren't handled and they will
 be implemented in the future versions.
 
-As the name suggest, TBX is the xml complaint format, that can be parsed by
+As the name suggest, TBX is the xml compliant format, that can be parsed by
 the any xml library.
-
-We try to wrap all xml structures in python classes to make the code more readable.
-
-For the more informations about The TBX Basic format you can look at:
-
 """
 from defusedxml.minidom import parseString
 
@@ -23,10 +18,9 @@ from pontoon.terminology.formats import (
 )
 
 
-class TBXObject(object):
+class XMLObject(object):
     """
-    All tbx objects will share the same constructor that
-    will receive an instance of a xml object.
+    All tbx objects will share the same constructor that will receive an instance of a xml object.
     """
     def __init__(self, xml_node):
         self.xml_node = xml_node
@@ -34,7 +28,7 @@ class TBXObject(object):
     @property
     def description(self):
         """
-        Most of the object in tbx file have a description property.
+        Most of the object in tbx file have a description.
         """
         for child in self.xml_node.childNodes:
             if child.tagName == 'descrip':
@@ -44,7 +38,10 @@ class TBXObject(object):
                 return child.childNodes[0].childNodes[0].data
 
 
-class Translation(TBXObject):
+class Translation(XMLObject):
+    """
+    Translation of term, contains info about the part of speech string translation in a given language.
+    """
     @property
     def text(self):
         return self.xml_node.getElementsByTagName('term')[0].childNodes[0].data
@@ -68,7 +65,10 @@ class Translation(TBXObject):
         return self.notes.get('partOfSpeech')
 
 
-class LangSet(TBXObject):
+class Language(XMLObject):
+    """
+    Mandatory section of TBX format. Stores translations of a term.
+    """
     @property
     def lang(self):
         return self.xml_node.getAttribute('xml:lang')
@@ -78,36 +78,33 @@ class LangSet(TBXObject):
         return map(Translation, self.xml_node.getElementsByTagName('ntig'))
 
 
-class TBXVCSTerm(TBXObject):
+class Term(XMLObject):
     """
-    TBX files contains a set of elements called entryTerms, they contains
-    langset and translation of the term.
-    This is a proxy class that will help to map those into objects that will
-    be later imported to pontoon database.
+    It describes a term on The Conceptual level. In files provided by Microsoft, this is container for a single term
+    and doesn't contain any top-level informations, all data is stored in specific language sets.
     """
     @property
     def id(self):
         return self.xml_node.getAttribute('id')
 
     @property
-    def langsets(self):
+    def languages(self):
         """
         A map of locale codes to their respective langset objects.
         """
         results = {}
-        for lang_set in map(LangSet, self.xml_node.getElementsByTagName('langSet')):
+        for lang_set in map(Language, self.xml_node.getElementsByTagName('langSet')):
             results[lang_set.lang] = lang_set
         return results
 
     @property
-    def source_langset(self):
+    def source_language(self):
         """
-        Most of the code/structure in pontoon assume that base source
-        strings are in en-GB or en-US. That implies that we'll need
-        strings from these locales to perform join between existing
-        entities and terms from the new terminology module.
+        Most of the code/structure in pontoon assume that base source strings are in en-GB or en-US.
+        That implies that we'll need strings from these locales to perform join between existing entities and terms
+        from the new terminology module.
         """
-        langsets = self.langsets
+        langsets = self.languages
         langset = langsets.get('en-GB', langsets.get('en-US'))
         if not langset:
             raise MissingSourceTerm()
@@ -116,7 +113,7 @@ class TBXVCSTerm(TBXObject):
 
     @property
     def source_term(self):
-        return self.source_langset.translations[0]
+        return self.source_language.translations[0]
 
     @property
     def source_text(self):
@@ -128,12 +125,12 @@ class TBXVCSTerm(TBXObject):
 
     @property
     def description(self):
-        return self.source_term.description or self.source_langset.description
+        return self.source_term.description or self.source_language.description
 
     @property
     def translations(self):
         trans = {}
-        for langset in self.langsets.values():
+        for langset in self.languages.values():
             for term in langset.translations:
                 trans.setdefault(langset.lang, []).append(term.text)
 
@@ -149,7 +146,7 @@ def parse_terms(file_contents):
     """
     xml_file = parseString(file_contents)
 
-    return (TBXVCSTerm(entryTerm) for entryTerm in xml_file.getElementsByTagName('termEntry'))
+    return (Term(entryTerm) for entryTerm in xml_file.getElementsByTagName('termEntry'))
 
 
-VCSTerm.register(TBXVCSTerm)
+VCSTerm.register(Term)
