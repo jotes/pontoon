@@ -1,14 +1,16 @@
 """
 This module tries to implement subset of The TBX Basic format.
 
-First version of the implementation allows to import files downloaded
+First version of the implementation allows to import t
 from The Microsoft Language Portal.
 
 However, there's a lot corner-cases that aren't handled and they will
 be implemented in the future versions.
 
-As the name suggest, TBX is the xml compliant format, that can be parsed by
+As the name suggest, TBX is the xml complaint format, that can be parsed by
 the any xml library.
+
+We try to wrap all xml structures in python classes to make the code more readable.
 """
 from defusedxml.minidom import parseString
 
@@ -104,12 +106,11 @@ class Term(XMLObject):
         That implies that we'll need strings from these locales to perform join between existing entities and terms
         from the new terminology module.
         """
-        langsets = self.languages
-        langset = langsets.get('en-GB', langsets.get('en-US'))
-        if not langset:
+        lang = self.languages.get('en-GB', self.languages.get('en-US'))
+        if not lang:
             raise MissingSourceTerm()
 
-        return langset
+        return lang
 
     @property
     def source_term(self):
@@ -130,9 +131,9 @@ class Term(XMLObject):
     @property
     def translations(self):
         trans = {}
-        for langset in self.languages.values():
-            for term in langset.translations:
-                trans.setdefault(langset.lang, []).append(term.text)
+        for lang in self.languages.values():
+            for term in lang.translations:
+                trans.setdefault(lang.lang, []).append(term.text)
 
         return trans
 
