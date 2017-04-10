@@ -1810,7 +1810,7 @@ class Entity(DirtyFieldsMixin, models.Model):
                 'obsolete': entity.obsolete,
                 'translation': translation_array,
                 'visible': False if entity.pk not in visible_entities or not visible_entities
-                                 else True
+                                 else True,
             })
 
         return entities_array

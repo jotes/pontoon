@@ -14,11 +14,11 @@ We try to wrap all xml structures in python classes to make the code more readab
 """
 from defusedxml.minidom import parseString
 
-from pontoon.terminology.formats import (
-    VCSTerm,
-    MissingSourceTerm
-)
 
+class MissingSourceTerm(Exception):
+    """
+    When Term doesn't contain Language translation for en-GB or en-US.
+    """
 
 class XMLObject(object):
     """
@@ -148,6 +148,3 @@ def parse_terms(file_contents):
     xml_file = parseString(file_contents)
 
     return (Term(entryTerm) for entryTerm in xml_file.getElementsByTagName('termEntry'))
-
-
-VCSTerm.register(Term)

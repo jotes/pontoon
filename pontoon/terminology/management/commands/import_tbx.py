@@ -31,4 +31,4 @@ class Command(BaseCommand):
 
         log.info('Loaded {} terms.'.format(len(terms)))
 
-        Term.objects.import_vcs_terms(terms)
+        Term.objects.import_terms(terms)
