@@ -469,6 +469,25 @@ class LocaleQuerySet(models.QuerySet):
 
 class Locale(AggregatedStats):
     code = models.CharField(max_length=20, unique=True)
+
+    # Codes related to Microsoft products.
+    ms_translator_code = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="""
+        Microsoft Translator maintains its own list of <a href="https://msdn.microsoft.com/en-us/library/hh456380.aspx">supported locales</a>.
+        Choose a locale from that list that's is the closest match or leave it blank to disable support for this feature.
+        """
+    )
+    ms_terminology_code = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="""
+        Microsoft Terminology uses locale codes standarized by ISO-639. Add a code of compliant locale or leave blank to disable
+        support for Microsoft terminology.
+        """
+    )
+
     name = models.CharField(max_length=128)
     plural_rule = models.CharField(
         max_length=128,

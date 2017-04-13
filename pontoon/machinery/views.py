@@ -64,8 +64,7 @@ def machine_translation(request):
     """Get translation from machine translation service."""
     try:
         text = request.GET['text']
-        locale = request.GET['locale']
-        check = request.GET['check']
+        locale_code = request.GET['locale']
     except MultiValueDictKeyError as e:
         return HttpResponseBadRequest('Bad Request: {error}'.format(error=e))
 
@@ -75,40 +74,25 @@ def machine_translation(request):
         log.error("MICROSOFT_TRANSLATOR_API_KEY not set")
         return HttpResponse("apikey")
 
+    locale = get_object_or_404(Locale, code=locale_code)
     obj = {}
 
     # On first run, check if target language supported
-    if check == "true":
-        supported = False
-        languages = settings.MICROSOFT_TRANSLATOR_LOCALES
-
-        if locale in languages:
-            supported = True
-
-        else:
-            for lang in languages:
-                if lang.startswith(locale.split("-")[0]):  # Neutral locales
-                    supported = True
-                    locale = lang
-                    break
-
-        if not supported:
-            return HttpResponse("not-supported")
-
-        obj['locale'] = locale
+    if not locale.ms_translator_code:
+        return HttpResponse("not-supported")
+    else:
+        obj['locale'] = locale.ms_translator_code
 
     url = "http://api.microsofttranslator.com/V2/Http.svc/Translate"
     payload = {
         "appId": api_key,
         "text": text,
         "from": "en",
-        "to": locale,
+        "to": locale.ms_translator_code,
         "contentType": "text/html",
     }
-
     try:
         r = requests.get(url, params=payload)
-
         # Parse XML response
         root = ET.fromstring(r.content)
         translation = root.text
@@ -124,41 +108,20 @@ def microsoft_terminology(request):
     """Get translations from Microsoft Terminology Service."""
     try:
         text = request.GET['text']
-        locale = request.GET['locale']
-        check = request.GET['check']
+        locale_code = request.GET['locale']
     except MultiValueDictKeyError as e:
         return HttpResponseBadRequest('Bad Request: {error}'.format(error=e))
 
     obj = {}
-    locale = locale.lower()
+    locale = get_object_or_404(Locale, code=locale_code)
     url = 'http://api.terminology.microsoft.com/Terminology.svc?singleWsdl'
     client = Client(url)
 
     # On first run, check if target language supported
-    if check == "true":
-        supported = False
-        languages = settings.MICROSOFT_TERMINOLOGY_LOCALES
-
-        if locale in languages:
-            supported = True
-
-        elif "-" not in locale:
-            temp = locale + "-" + locale  # Try e.g. "de-de"
-            if temp in languages:
-                supported = True
-                locale = temp
-
-            else:
-                for lang in languages:
-                    if lang.startswith(locale + "-"):  # Try e.g. "de-XY"
-                        supported = True
-                        locale = lang
-                        break
-
-        if not supported:
-            return HttpResponse("not-supported")
-
-        obj['locale'] = locale
+    if not locale.ms_terminology_code:
+        return HttpResponse("not-supported")
+    else:
+        obj['locale'] = locale.code
 
     sources = client.factory.create('ns0:TranslationSources')
     sources["TranslationSource"] = ['Terms', 'UiStrings']
@@ -166,11 +129,10 @@ def microsoft_terminology(request):
     payload = {
         'text': text,
         'from': 'en-US',
-        'to': locale,
+        'to': locale.ms_terminology_code,
         'sources': sources,
         'maxTranslations': 5
     }
-
     try:
         r = client.service.GetTranslations(**payload)
         translations = []
