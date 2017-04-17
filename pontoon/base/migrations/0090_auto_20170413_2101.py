@@ -5,10 +5,15 @@ from __future__ import unicode_literals
 from bulk_update.helper import bulk_update
 from django.db import migrations, models
 
+"""
+We decided to move dynamic mapping of locales into a static map which will be stored in the database.
+Locales that can't be mapped between Pontoon and Microsoft Translator/Terminology, won't be able to use
+those products.
+"""
 TRANSLATOR_LOCALES = {
     u'ar': u'ar',
     u'bg': u'bg',
-    u'bs-Latn': u'bs',  # CONFLICT?
+    u'bs-Latn': u'bs',
     u'ca': u'ca',
     u'cs': u'cs',
     u'cy': u'cy',
@@ -33,30 +38,30 @@ TRANSLATOR_LOCALES = {
     u'lt': u'lt',
     u'lv': u'lv',
     u'ms': u'ms',
-    u'mt': u'',  # MISSING?
-    u'mww': u'',  # MISSING?
+    u'mt': u'',
+    u'mww': u'',
     u'nl': u'nl',
-    u'no': u'',  # MISSING?
-    u'otq': u'', # MISSING?
+    u'no': u'',
+    u'otq': u'',
     u'pl': u'pl',
     u'pt': u'pt-PT',
     u'ro': u'ro',
     u'ru': u'ru',
     u'sk': u'sk',
     u'sl': u'sl',
-    u'sr-Cyrl': u'sr',  # CONFLICT?
-    u'sr-Latn': u'sr',  # CONFLICT?
+    u'sr-Cyrl': u'sr',
+    u'sr-Latn': u'',  # https://github.com/mozilla/pontoon/pull/535#discussion_r111643574
     u'sv': u'sv-SE',
     u'th': u'th',
-    u'tlh': u'',  # MISSING?
-    u'tlh-Qaak': u'',  # MISSING?
+    u'tlh': u'',
+    u'tlh-Qaak': u'',
     u'tr': u'tr',
     u'uk': u'uk',
     u'ur': u'ur',
     u'vi': u'vi',
-    u'yua': u'',  # MISSING?
-    u'zh-CHS': u'zh-CN',  # CONFLICT?
-    u'zh-CHT': u'zh-CN'  # CONFLICT
+    u'yua': u'',
+    u'zh-CHS': u'zh-CN',
+    u'zh-CHT': u'' # https://github.com/mozilla/pontoon/pull/535#discussion_r111643503
 }
 
 TERMINOLOGY_LOCALES = {
@@ -125,58 +130,58 @@ TERMINOLOGY_LOCALES = {
     u'az-Latn-az': u'az',
     u'bn-bd': u'bn-BD',
     u'bn-in': u'bn-IN',
-    u'bs-Cyrl-ba': u'bs',  #CONFLICT?
-    u'bs-Latn-ba': u'bs',  #CONFLICT?
+    u'bs-Cyrl-ba': u'',  # https://github.com/mozilla/pontoon/pull/535#discussion_r111643696
+    u'bs-Latn-ba': u'bs',
     u'ca-ES-valencia': u'ca',
-    u'chr-Cher-US': u'',  # MISSING
+    u'chr-Cher-US': u'',
     u'en-gb': u'en-GB',
     u'es-es': u'es-ES',
     u'es-mx': u'es-MX',
     u'fr-ca': u'fr',
     u'gd-gb': u'gd',
-    u'guc-VE': u'',  # MISSING?
-    u'iu-Latn-ca': u'',  # MISSING?
-    u'kok-in': u'',  # MISSING?
+    u'guc-VE': u'',
+    u'iu-Latn-ca': u'',
+    u'kok-in': u'',
     u'ku-Arab-IQ': u'ku',
-    u'ky-kg': u'',  # MISSING?
-    u'lb-lu': u'',  # MISSING?
-    u'mi-nz': u'',  # MISSING?
+    u'ky-kg': u'',
+    u'lb-lu': u'',
+    u'mi-nz': u'',
     u'mk-mk': u'mk',
     u'mn-mn': u'mn',
-    u'ms-bn': u'ms', # CONFLICT?
-    u'ms-my': u'ms', # CONFLICT?
-    u'mt-mt': u'', # MISSING?
+    u'ms-bn': u'ms',
+    u'ms-my': u'ms-my',
+    u'mt-mt': u'',
     u'nb-no': u'nb-NO',
     u'nn-no': u'nn-NO',
-    u'nso-za': u'nso', # CONFLICT?
-    u'or-in': u'or',  # CONFLICT?
-    u'pa-Arab-PK': u'', # MISSING?
-    u'prs-AF': u'',  # MISSING?
-    u'ps-af': u'',  # MISSING?
+    u'nso-za': u'nso',
+    u'or-in': u'or',
+    u'pa-Arab-PK': u'',
+    u'prs-AF': u'',
+    u'ps-af': u'',
     u'pt-br': u'pt-BR',
     u'pt-pt': u'pt-PT',
-    u'quc-Latn-GT': u'',  # MISSING?
-    u'quz-pe': u'',  # MISSING?
-    u'rw-rw': u'',  # MISSING?
-    u'sd-Arab-PK': u'',  # MISSING?
-    u'sr-Cyrl-ba': u'sr',  # CONFLICT?
-    u'sr-Cyrl-rs': u'sr',  # CONFLICT?
-    u'sr-Latn-rs': u'sr',  # CONFLICT?
-    u'sw-ke': u'sw',  # CONFLICT?
-    u'ta-in': u'ta',  # CONFLICT?
-    u'tg-Cyrl-tj': u'',  # MISSING?
-    u'ti-et': u'',  # MISSING?
-    u'tk-tm': u'',  # MISSING?
+    u'quc-Latn-GT': u'',
+    u'quz-pe': u'',
+    u'rw-rw': u'',
+    u'sd-Arab-PK': u'',
+    u'sr-Cyrl-ba': u'',  # https://github.com/mozilla/pontoon/pull/535#discussion_r111643879
+    u'sr-Cyrl-rs': u'sr',
+    u'sr-Latn-rs': u'',  # https://github.com/mozilla/pontoon/pull/535#discussion_r111643879
+    u'sw-ke': u'sw',
+    u'ta-in': u'ta',
+    u'tg-Cyrl-tj': u'tg',
+    u'ti-et': u'',
+    u'tk-tm': u'',
     u'tl-PH': u'tl',
-    u'tn-za': u'',  # MISSING?
-    u'tt-ru': u'',  # MISSING?
-    u'ug-cn': u'',  # MISSING?
+    u'tn-za': u'',
+    u'tt-ru': u'',
+    u'ug-cn': u'',
     u'uz-Latn-uz': u'uz',
     u'xh-za': u'xh',
     u'zh-cn': u'zh-CN',
-    u'zh-hk': u'',  # CONFLICT?
+    u'zh-hk': u'zh-HK',
     u'zh-tw': u'zh-TW',
-    u'zu-za': u'zu'  # CONFLICT?
+    u'zu-za': u'zu'
 }
 
 
