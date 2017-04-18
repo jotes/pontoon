@@ -149,7 +149,7 @@ TERMINOLOGY_LOCALES = {
     u'mk-mk': u'mk',
     u'mn-mn': u'mn',
     u'ms-bn': u'ms',
-    u'ms-my': u'ms-my',
+    u'ms-my': u'ms',
     u'mt-mt': u'',
     u'nb-no': u'nb-NO',
     u'nn-no': u'nn-NO',
@@ -193,10 +193,12 @@ def migrate_locales(apps, schema_editor):
     locale_map = {l.code:l for l in Locale.objects.all()}
 
     for ms_code, pontoon_code in filter(lambda x: x[1], TRANSLATOR_LOCALES.items()):
-        locale_map[pontoon_code].ms_translator_code = ms_code
+        if pontoon_code in locale_map:
+            locale_map[pontoon_code].ms_translator_code = ms_code
 
     for ms_code, pontoon_code in filter(lambda x: x[1], TERMINOLOGY_LOCALES.items()):
-        locale_map[pontoon_code].ms_terminology_code = ms_code
+        if pontoon_code in locale_map:
+            locale_map[pontoon_code].ms_terminology_code = ms_code
 
     bulk_update(locale_map.values(), update_fields=['ms_translator_code', 'ms_terminology_code'])
 

@@ -177,6 +177,20 @@ class Term(models.Model):
     def __unicode__(self):
         return self.source_term
 
+    def serialize(self, locale):
+        if hasattr(self, 'cached_translations'):
+            translations = self.cached_translations
+        else:
+            translations = self.translations.all()
+        return {
+            'term': self.source_term,
+            'note': self.note,
+            'description': self.description,
+            'translations': [
+                t.text for t in translations
+            ]
+        }
+
 
 class TermTranslation(models.Model):
     """
@@ -186,3 +200,4 @@ class TermTranslation(models.Model):
     term = models.ForeignKey(Term, related_name='translations')
 
     text = models.TextField()
+

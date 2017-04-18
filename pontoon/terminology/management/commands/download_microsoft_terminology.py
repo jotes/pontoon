@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 
 from django.core.management.base import BaseCommand, CommandError
 
+from pontoon.base.models import Locale
+
+
 """
 Locale codes from Microsoft portal that can't be directly mapped to locales provided by Pontoon.
 """
@@ -24,8 +27,8 @@ class Command(BaseCommand):
         return BeautifulSoup(requests.get(self.TERMINOLOGY_URL).content, 'html.parser')
 
     @property
-    def available_locales(self):
-        """Map of locale codes and their respective form values."""
+    def ms_portal_locales(self):
+        """Map of locales to form values, extracted from Microsoft Terminology Portal."""
         locales_map = {}
 
         for option in self.page.find('select', class_='terminology').findChildren('option'):
@@ -34,7 +37,7 @@ class Command(BaseCommand):
             locales_map[locale_code] = value
         return locales_map
 
-    def download_terminology_file(self, path, locale_form_value):
+    def download_terminology_file(self, path, locale_code, locale_form_value):
         # Because it's an ASP.NET page we have to extract viewstate and eventvalidation from the page first.
         viewstate = self.page.find(id="__VIEWSTATE")['value']
         eventvalidation = self.page.find(id="__EVENTVALIDATION")['value']
@@ -49,39 +52,49 @@ class Command(BaseCommand):
             'ctl00$cbo_LocSites': '0',
             'ctl00$ContentPlaceHolder1$lb_Lang': locale_form_value
         })
-        locale_code = locale_form_value.split('|')[1]
+        ms_locale_code = locale_form_value.split('|')[1]
         with open(path, 'w') as f:
             file_content = file_data.content
-            # Translate locale code for easier processing later.
+
+            # Replace MS locale code with Pontoon code to make it easier to import.
             file_content = file_content.replace(
-                'xml:lang="{}"'.format(locale_code),
-                'xml:lang="{}"'.format(LOCALES_MAP[locale_code])
+                'xml:lang="{}"'.format(ms_locale_code),
+                'xml:lang="{}"'.format(locale_code)
             )
             f.write(file_content)
 
     def handle(self, *args, **options):
-        locale = options.get('locale')
+        locale_code = options.get('locale')
         output_dir = options.get('output_dir')
 
         if not output_dir:
             raise CommandError('You have to set output directory.')
 
-        available_locales = self.available_locales
-        print 'Discovered {} available locales.'.format(len(available_locales))
+        # A list of Pontoon locales that share terminology with Microsoft Portal.
+        terminology_locales = (
+            Locale
+                .objects
+                .filter(ms_terminology_code__isnull=False)
+        )
+        print 'Discovered {} available locales.'.format(len(self.ms_portal_locales))
 
-        if locale:
+        if locale_code:
             try:
-                locales_to_download = {locale.lower(): available_locales[locale.lower()]}
-            except KeyError:
-                print "Can't find locale: {}".format(locale.lower())
+                locales_to_download = [
+                    terminology_locales.get(code=locale_code)
+                ]
+            except Locale.DoesNotExist:
+                print "Can't find locale: {}".format(locale_code.lower())
                 print "Available locales:"
-                print ', '.join(sorted(available_locales))
+                print ', '.join(sorted(terminology_locales.values_list('code', flat=True)))
                 sys.exit()
         else:
-            locales_to_download = available_locales
+            # Download all locales if no specific locale is requested.
+            locales_to_download = terminology_locales
 
-        for locale_code, locale_form_value in locales_to_download.items():
-            file_path = os.path.join(output_dir, '{}.tbx'.format(LOCALES_MAP[locale_code]))
+        for locale in locales_to_download:
+            file_path = os.path.join(output_dir, '{}.tbx'.format(locale.code))
+
             print 'Downloading {} into {}'.format(locale_code, file_path)
-            self.download_terminology_file(file_path, locale_form_value)
+            self.download_terminology_file(file_path, locale.code, self.ms_portal_locales[locale.ms_terminology_code])
 

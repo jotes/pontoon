@@ -1801,18 +1801,34 @@ class Entity(DirtyFieldsMixin, models.Model):
 
     @classmethod
     def map_entities(cls, locale, entities, visible_entities=None):
+        # To avoid circular dependencies.
+        from pontoon.terminology.models import Term, TermTranslation
+
         entities_array = []
         visible_entities = visible_entities or []
 
+        entities = entities.prefetch_related(
+            Prefetch(
+                'terminology_terms',
+                Term.objects.all().prefetch_related(
+                    Prefetch(
+                        'translations',
+                        TermTranslation.objects.filter(locale=locale),
+                        to_attr='prefetch_translations'
+                    )
+                ),
+                to_attr='prefetch_terms'
+            )
+        )
         for entity in entities:
             translation_array = []
-
             if entity.string_plural == "":
                 translation_array.append(entity.get_translation())
 
             else:
                 for plural_form in range(0, locale.nplurals or 1):
                     translation_array.append(entity.get_translation(plural_form))
+
 
             entities_array.append({
                 'pk': entity.pk,
@@ -1830,6 +1846,7 @@ class Entity(DirtyFieldsMixin, models.Model):
                 'translation': translation_array,
                 'visible': False if entity.pk not in visible_entities or not visible_entities
                                  else True,
+                'terms': [term.serialize(locale) for term in entity.prefetch_terms]
             })
 
         return entities_array
