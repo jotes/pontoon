@@ -206,7 +206,7 @@ def migrate_locales(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('base', '0089_create_project_manager_group'),
+        ('base', '0091_add_fulltext_search'),
     ]
 
     operations = [

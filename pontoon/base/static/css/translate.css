@@ -374,6 +374,7 @@ body > header .locale.select {
 }
 
 #progress .number {
+  font-weight: bold;
   left: 0;
   line-height: 20px;
   position: absolute;
@@ -387,6 +388,7 @@ body > header .locale.select {
   color: #888888;
   display: block;
   font-size: 10px;
+  font-weight: 300;
   line-height: 3px;
 }
 
@@ -1096,6 +1098,11 @@ body > header aside p {
   padding-left: 2%;
 }
 
+#entitylist > .wrapper > ul > li p span.translation-string[lang="mk"],
+#entitylist > .wrapper > ul > li p span.translation-string[lang="sr"] {
+  font-family: "Ubuntu Regular";
+}
+
 #entitylist > .wrapper > ul > li.translated p span.source-string,
 #entitylist > .wrapper > ul > li.suggested p span.source-string,
 #entitylist > .wrapper > ul > li.fuzzy p span.source-string,
@@ -1385,6 +1392,7 @@ body > header aside p {
 
 #editor textarea {
   background: #FFFFFF;
+  color: #222222;
   display: block;
   font-size: 13px;
   height: 20%;

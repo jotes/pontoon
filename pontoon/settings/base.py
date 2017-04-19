@@ -156,6 +156,7 @@ INSTALLED_APPS = (
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.fxa',
+    'notifications',
 )
 
 BLOCKED_IPS = os.environ.get('BLOCKED_IPS', '').split(',')
@@ -338,6 +339,12 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'css/settings.min.css',
     },
+    'notifications': {
+        'source_filenames': (
+            'css/notifications.css',
+        ),
+        'output_filename': 'css/notifications.min.css',
+    },
     'machinery': {
         'source_filenames': (
             'css/machinery.css',
@@ -371,6 +378,7 @@ PIPELINE_JS = {
         'source_filenames': (
             'js/lib/jquery-1.11.1.min.js',
             'js/lib/jquery.timeago.js',
+            'js/lib/jquery.color-2.1.2.js',
             'js/lib/nprogress.js',
             'js/main.js',
         ),
@@ -456,6 +464,12 @@ PIPELINE_JS = {
             'js/contributor.js',
         ),
         'output_filename': 'js/settings.min.js',
+    },
+    'notifications': {
+        'source_filenames': (
+            'js/notifications.js',
+        ),
+        'output_filename': 'js/notifications.min.js',
     },
     'machinery': {
         'source_filenames': (
