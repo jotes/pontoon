@@ -116,8 +116,8 @@ class TermManager(models.Manager):
                     Term(
                         term_id=term.id,
                         source_term=term.source_text,
-                        note=term.note,
-                        description=term.description,
+                        note=term.note or '',
+                        description=term.description or '',
                     )
                 )
 

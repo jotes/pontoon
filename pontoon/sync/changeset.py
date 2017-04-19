@@ -13,6 +13,7 @@ from pontoon.base.models import (
     TranslationMemoryEntry
 )
 from pontoon.base.utils import match_attr
+from pontoon.terminology.models import Term
 
 log = logging.getLogger(__name__)
 
@@ -147,10 +148,11 @@ class ChangeSet(object):
         }
 
     def execute_create_db(self):
+        added_entities = []
         for vcs_entity in self.changes['create_db']:
             entity = Entity(**self.get_entity_updates(vcs_entity))
             entity.save()  # We can't use bulk_create since we need a PK
-
+            added_entities.append((entity.pk, entity.string, entity.string_plural))
             for locale_code, vcs_translation in vcs_entity.translations.items():
                 for plural_form, string in vcs_translation.strings.items():
                     self.translations_to_create.append(Translation(
@@ -162,6 +164,7 @@ class ChangeSet(object):
                         approved_date=self.now if not vcs_translation.fuzzy else None,
                         fuzzy=vcs_translation.fuzzy
                     ))
+        Term.objects.assign_terms_to_entities(added_entities)
 
     def update_entity_translations_from_vcs(
             self, db_entity, locale_code, vcs_translation,
@@ -260,6 +263,7 @@ class ChangeSet(object):
         if self.changes['update_db']:
             entities_with_translations = self.prefetch_entity_translations()
 
+        updated_entities = []
         for locale_code, db_entity, vcs_entity in self.changes['update_db']:
             for field, value in self.get_entity_updates(vcs_entity).items():
                 setattr(db_entity, field, value)
@@ -275,6 +279,8 @@ class ChangeSet(object):
                     db_entity, locale_code, vcs_translation, None,
                     prefetched_entity.db_translations, prefetched_entity.old_translations
                 )
+            updated_entities.append((db_entity.pk, db_entity.string, db_entity.string_plural))
+        Term.objects.assign_terms_to_entities(updated_entities)
 
     def execute_obsolete_db(self):
         (Entity.objects

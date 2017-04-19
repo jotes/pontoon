@@ -1829,7 +1829,6 @@ class Entity(DirtyFieldsMixin, models.Model):
                 for plural_form in range(0, locale.nplurals or 1):
                     translation_array.append(entity.get_translation(plural_form))
 
-
             entities_array.append({
                 'pk': entity.pk,
                 'original': entity.string,
