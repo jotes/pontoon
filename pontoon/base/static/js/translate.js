@@ -25,6 +25,7 @@ var Pontoon = (function (my) {
     renderEntity: function (index, entity) {
       var self = this,
           status = self.getEntityStatus(entity),
+          openSans = (['Latin', 'Greek', 'Cyrillic', 'Vietnamese'].indexOf(self.locale.script) > -1) ? ' open-sans' : '',
           source_string = (entity.original_plural && self.locale.nplurals < 2) ? entity.marked_plural : entity.marked,
           li = $('<li class="entity' +
         (' ' + status) +
@@ -35,7 +36,7 @@ var Pontoon = (function (my) {
         '<span class="status fa' + (self.user.canTranslate() ? '' : ' unselectable') + '"></span>' +
         '<p class="string-wrapper">' +
           '<span class="source-string">' + source_string + '</span>' +
-          '<span class="translation-string" dir="auto" lang="' + self.locale.code + '">' +
+          '<span class="translation-string' + openSans + '" dir="' + self.locale.direction + '" lang="' + self.locale.code + '" data-script="' + self.locale.script + '">' +
             self.markPlaceables(entity.translation[0].string || '') +
           '</span>' +
         '</p>' +
@@ -132,7 +133,7 @@ var Pontoon = (function (my) {
             $.each(data, function() {
               list.append('<li class="suggestion" title="Copy Into Translation (Tab)">' +
                 '<header>' + this.locale__name + '<span class="stress">' + this.locale__code + '</span></header>' +
-                '<p class="translation" dir="auto" lang="' + this.locale__code + '">' +
+                '<p class="translation" dir="' + this.locale__direction + '" lang="' + this.locale__code + '" data-script="' + this.locale__script + '">' +
                   self.markPlaceables(this.string) +
                 '</p>' +
                 '<p class="translation-clipboard">' +
@@ -271,10 +272,10 @@ var Pontoon = (function (my) {
                       ((self.user.id && (self.user.id === this.uid) || self.user.canTranslate()) ? '<button class="delete fa" title="Delete"></button>' : '') +
                     '</menu>' +
                   '</header>' +
-                  '<p class="translation" dir="auto" lang="' + self.locale.code + '">' +
+                  '<p class="translation" dir="' + self.locale.direction + '" lang="' + self.locale.code + '" data-script="' + self.locale.script + '">' +
                     self.markPlaceables(this.translation) +
                   '</p>' +
-                  '<p class="translation-diff" dir="auto" lang="' + self.locale.code + '">' +
+                  '<p class="translation-diff" dir="' + self.locale.direction + '" lang="' + self.locale.code + '" data-script="' + self.locale.script + '">' +
                     ((i > 0) ? self.diff(data[0].translation, this.translation) : self.markPlaceables(this.translation)) +
                   '</p>' +
                   '<p class="translation-clipboard">' +
@@ -342,27 +343,20 @@ var Pontoon = (function (my) {
      *
      * text Source string
      */
-    markTerms: function (text) {
-      // TODO: Instead of hardcoding, retrieve a list of terms dynamically
-      var terms = [{
-        original: "web",
-        partOfSpeech: "noun",
-        description: "The World Wide Web is the part of the Internet that contains websites and webpages.",
-        translation: "splet"
-      }];
-
+    markTerms: function (text, terms) {
       for (var i=0; i<terms.length; i++) {
         var term = terms[i],
-            re = new RegExp(term.original, 'gi');
+            re = new RegExp(term.term, 'gi');
 
         // TODO: Make sure only actual text is marked (avoid placeables and previously marked terms)
+        // TODO: Handle case when multiple translations are available
         text = text.replace(re, '<mark class="term" ' +
-          'data-original="' + term.original +
-          '" data-part-of-speech="' + term.partOfSpeech +
+          'data-original="' + term.term +
+          '" data-part-of-speech="' + term.note +
           '" data-description="' + term.description +
-          '" data-translation="' + term.translation +
+          '" data-translation="' + term.translations[0] +
           // TODO: Instead of the title attribute, build rich tooltip using data-* attributes
-          '" title="' + term.translation + ' (' + term.partOfSpeech + '): ' + term.description +
+          '" title="' + term.translations[0] + ' (' + term.note + '): ' + term.description +
         '">$&</mark>');
       }
 
@@ -465,7 +459,7 @@ var Pontoon = (function (my) {
       $('.warning-overlay:visible .cancel').click();
 
       // Original string
-      $('#original').html(self.markTerms(entity.marked));
+      $('#original').html(self.markTerms(entity.marked, entity.terms));
 
       // Plurals
       $('#source-pane').removeClass('pluralized');
@@ -508,7 +502,7 @@ var Pontoon = (function (my) {
         // Show plural string to locales with a single plural form (includes variable identifier)
         } else {
           $('#source-pane h2').html('Plural').show();
-          $('#original').html(self.markTerms(entity.marked_plural));
+          $('#original').html(self.markTerms(entity.marked_plural, entity.terms));
         }
       }
 
@@ -1595,7 +1589,7 @@ var Pontoon = (function (my) {
             source = entity.translation[i].string;
 
         $('#source-pane h2').html(title).show();
-        $('#original').html(self.markTerms(marked));
+        $('#original').html(self.markTerms(marked, entity.terms));
 
         $('#translation').val(source).focus();
         $('#translation-length .original-length').html(original.length);
@@ -2271,22 +2265,24 @@ var Pontoon = (function (my) {
      * Update all translations in localStorage on server
      */
     syncLocalStorageOnServer: function() {
-      if (localStorage.length !== 0) {
-        var len = this.entities.length;
-        for (var i = 0; i < len; i++) {
-          var entity = this.entities[i],
-              key = this.getLocalStorageKey(entity),
-              value = localStorage[key];
-          if (value) {
-            value = JSON.parse(localStorage[key]);
-            this.updateOnServer(entity, value.translation, false);
-            delete localStorage[key];
-          }
-        }
-
-        // Clear all other translations
-        localStorage.clear();
+      if (! (localStorage instanceof Storage) || localStorage.length === 0) {
+        return;
       }
+
+      var len = this.entities.length;
+      for (var i = 0; i < len; i++) {
+        var entity = this.entities[i],
+            key = this.getLocalStorageKey(entity),
+            value = localStorage[key];
+        if (value) {
+          value = JSON.parse(localStorage[key]);
+          this.updateOnServer(entity, value.translation, false);
+          delete localStorage[key];
+        }
+      }
+
+      // Clear all other translations
+      localStorage.clear();
     },
 
 
@@ -2811,6 +2807,17 @@ var Pontoon = (function (my) {
 
 
     /*
+     * Update textarea lang and dir attributes
+     */
+    updateTextareaAttributes: function () {
+      $('#translation')
+        .attr('dir', this.locale.direction)
+        .attr('lang', this.locale.code)
+        .attr('data-script', this.locale.script);
+    },
+
+
+    /*
      * Update profile menu links and contents
      */
     updateProfileMenu: function () {
@@ -2903,6 +2910,7 @@ var Pontoon = (function (my) {
       self.updateMainMenu();
       self.updateProjectInfo();
       self.updateProfileMenu();
+      self.updateTextareaAttributes();
       self.updateSaveButtons();
       self.resetTimeRange();
       self.updateAuthors();
