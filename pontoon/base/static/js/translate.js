@@ -342,27 +342,20 @@ var Pontoon = (function (my) {
      *
      * text Source string
      */
-    markTerms: function (text) {
-      // TODO: Instead of hardcoding, retrieve a list of terms dynamically
-      var terms = [{
-        original: "web",
-        partOfSpeech: "noun",
-        description: "The World Wide Web is the part of the Internet that contains websites and webpages.",
-        translation: "splet"
-      }];
-
+    markTerms: function (text, terms) {
       for (var i=0; i<terms.length; i++) {
         var term = terms[i],
-            re = new RegExp(term.original, 'gi');
+            re = new RegExp(term.term, 'gi');
 
         // TODO: Make sure only actual text is marked (avoid placeables and previously marked terms)
+        // TODO: Handle case when multiple translations are available
         text = text.replace(re, '<mark class="term" ' +
-          'data-original="' + term.original +
-          '" data-part-of-speech="' + term.partOfSpeech +
+          'data-original="' + term.term +
+          '" data-part-of-speech="' + term.note +
           '" data-description="' + term.description +
-          '" data-translation="' + term.translation +
+          '" data-translation="' + term.translations[0] +
           // TODO: Instead of the title attribute, build rich tooltip using data-* attributes
-          '" title="' + term.translation + ' (' + term.partOfSpeech + '): ' + term.description +
+          '" title="' + term.translations[0] + ' (' + term.note + '): ' + term.description +
         '">$&</mark>');
       }
 
@@ -465,7 +458,7 @@ var Pontoon = (function (my) {
       $('.warning-overlay:visible .cancel').click();
 
       // Original string
-      $('#original').html(self.markTerms(entity.marked));
+      $('#original').html(self.markTerms(entity.marked, entity.terms));
 
       // Plurals
       $('#source-pane').removeClass('pluralized');
@@ -508,7 +501,7 @@ var Pontoon = (function (my) {
         // Show plural string to locales with a single plural form (includes variable identifier)
         } else {
           $('#source-pane h2').html('Plural').show();
-          $('#original').html(self.markTerms(entity.marked_plural));
+          $('#original').html(self.markTerms(entity.marked_plural, entity.terms));
         }
       }
 
@@ -1595,7 +1588,7 @@ var Pontoon = (function (my) {
             source = entity.translation[i].string;
 
         $('#source-pane h2').html(title).show();
-        $('#original').html(self.markTerms(marked));
+        $('#original').html(self.markTerms(marked, entity.terms));
 
         $('#translation').val(source).focus();
         $('#translation-length .original-length').html(original.length);
