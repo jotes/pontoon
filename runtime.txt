@@ -1,1 +1,2 @@
+# Information about selected Python runtime for Heroku app button.
 python-2.7.14
