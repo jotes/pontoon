@@ -75,7 +75,11 @@ if os.environ.get('HEROKU_DEMO') and not os.environ.get('SITE_URL'):
 
         # Sometimes data from cache is flushed, We can't do anything about that.
         if not app_url:
-            app_url = "https://{}".format(Site.objects.get(pk=1).domain)
+            domain = Site.objects.get(pk=1).domain
+            if domain == 'example.com':
+                app_url = "https://*.herokuapp.com"
+            else:
+                app_url = "https://{}".format(domain)
             cache.set(APP_URL_KEY, app_url)
 
         return app_url
