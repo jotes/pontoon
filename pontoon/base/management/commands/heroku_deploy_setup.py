@@ -18,7 +18,8 @@ class Command(BaseCommand):
     help = 'Setup an instance of Pontoon deployed via Heroku Deploy.'
 
     def handle(self, *args, **options):
-        app_host = urlparse(os.environ.get('SITE_URL')).netloc
+        site_url = os.environ.get('SITE_URL')
+        app_host = urlparse(site_url).netloc
         admin_email = os.environ.get('ADMIN_EMAIL')
         admin_password = os.environ.get('ADMIN_PASSWORD')
 
@@ -26,5 +27,5 @@ class Command(BaseCommand):
         Site.objects.filter(pk=1).update(name=app_host, domain=app_host)
 
         Project.objects.filter(slug='pontoon-intro').update(
-            urljoin(app_host, 'intro')
+            urljoin(app_host, 'intro/')
         )
