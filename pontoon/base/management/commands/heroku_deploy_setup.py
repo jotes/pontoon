@@ -18,7 +18,7 @@ class Command(BaseCommand):
     help = 'Setup an instance of Pontoon deployed via Heroku Deploy.'
 
     def handle(self, *args, **options):
-        app_host = urlparse(os.environ.get('SITE_URL')).hostname
+        app_host = urlparse(os.environ.get('SITE_URL')).netloc
         admin_email = os.environ.get('ADMIN_EMAIL')
         admin_password = os.environ.get('ADMIN_PASSWORD')
 
