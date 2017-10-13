@@ -6,7 +6,7 @@
 # and has been modified in order to use Fxa provider from the allauth package.
 import os
 
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 
 from django.core.management.base import BaseCommand
 from django.contrib.sites.models import Site
@@ -26,5 +26,5 @@ class Command(BaseCommand):
         Site.objects.filter(pk=1).update(name=app_host, domain=app_host)
 
         Project.objects.filter(slug='pontoon-intro').update(
-            url='https://{}/intro/'.format(app_host)
+            urljoin(app_host, 'introh')
         )
