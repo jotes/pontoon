@@ -27,5 +27,5 @@ class Command(BaseCommand):
         Site.objects.filter(pk=1).update(name=app_host, domain=app_host)
 
         Project.objects.filter(slug='pontoon-intro').update(
-            urljoin(site_url, 'intro/')
+            url=urljoin(site_url, 'intro/')
         )
