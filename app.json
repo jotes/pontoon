@@ -32,6 +32,10 @@
      }
    ],
    "env": {
+     "SITE_URL": {
+       "description": "Access url to the instance e.g. https://<app name>.herokuapp.com",
+       "required": true
+     },
      "ADMIN_EMAIL": {
        "value": "pontoon@example.com",
        "description": "Email address for the ``ADMINS`` setting."
@@ -105,10 +109,6 @@
     "HEROKU_DEMO": {
       "description": "Enabled features like a standalone login page etc.",
       "value": "1"
-    },
-    "SITE_URL": {
-      "description": "Access url to the instance e.g. https://<app name>.herokuapp.com",
-      "required": true
     }
    },
    "buildpacks": [
