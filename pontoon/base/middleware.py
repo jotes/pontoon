@@ -1,7 +1,5 @@
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.sites.models import Site
-from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponseForbidden
 from raygun4py.middleware.django import Provider

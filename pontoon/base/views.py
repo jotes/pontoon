@@ -1,15 +1,11 @@
 import logging
-import os
 
 from bulk_update.helper import bulk_update
 from datetime import datetime
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
-from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage
 from django.db import transaction
 from django.db.models import Q
