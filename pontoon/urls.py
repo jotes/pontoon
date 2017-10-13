@@ -83,12 +83,6 @@ urlpatterns = [
     url(r'^404/$', TemplateView.as_view(template_name='404.html')),
     url(r'^500/$', TemplateView.as_view(template_name='500.html')),
 
-    # Urls related to integration with Heroku
-    url(
-        r'^heroku-setup/', heroku_setup,
-        name='pontoon.heroku_setup'
-    ),
-
     # Robots.txt
     url(
         r'^robots.txt$',

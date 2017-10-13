@@ -4,7 +4,7 @@
    "keywords": ["l10n", "localization", "mozilla", "collaboration", "python", "django"],
    "website": "https://pontoon.mozilla.org",
    "logo": "https://pontoon.mozilla.org/static/img/logo.svg",
-   "success_url": "/heroku-setup/",
+   "success_url": "/",
    "image": "heroku/python",
    "addons": [
      {
@@ -105,6 +105,10 @@
     "HEROKU_DEMO": {
       "description": "Enabled features like a standalone login page etc.",
       "value": "1"
+    },
+    "SITE_URL": {
+      "description": "Access url to the instance e.g. https://<app name>.herokuapp.com",
+      "required": true
     }
    },
    "buildpacks": [
@@ -125,7 +129,7 @@
      }
    ],
    "scripts": {
-    "postdeploy": "./bin/heroku_postdeploy"
+     "postdeploy": "./bin/heroku_postdeploy deploy_button"
    },
    "formation": {
      "worker": {

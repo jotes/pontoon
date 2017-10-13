@@ -75,34 +75,6 @@ def home(request):
     return translate(request, locale, project.slug, path)
 
 
-def heroku_setup(request):
-    """
-    Heroku doesn't allow us to set SITE_URL or Site during the build phase of an app.
-    Because of that we have to set everything up after build is done and app is
-    able to retrieve a domain.
-    """
-    app_host = request.get_host()
-    homepage_url = 'https://{}/'.format(app_host)
-    site_domain = Site.objects.get(pk=1).domain
-
-    if not os.environ.get('HEROKU_DEMO') or site_domain != 'example.com':
-        return redirect(homepage_url)
-
-    admin_email = os.environ.get('ADMIN_EMAIL')
-    admin_password = os.environ.get('ADMIN_PASSWORD')
-
-    User.objects.create_superuser(admin_email, admin_email, admin_password)
-    Site.objects.filter(pk=1).update(name=app_host, domain=app_host)
-
-    Project.objects.filter(slug='pontoon-intro').update(
-        url='https://{}/intro/'.format(app_host)
-    )
-
-    # Clear the cache to ensure that SITE_URL will be regenerated.
-    cache.delete(settings.APP_URL_KEY)
-    return redirect(homepage_url)
-
-
 # TRANSLATE VIEWs
 
 
