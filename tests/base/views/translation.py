@@ -136,3 +136,29 @@ def test_view_translate_force_suggestions(project_locale0,
         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
     assert response.status_code == 200
     assert Translation.objects.last().approved is False
+
+    # Change resource type to trigger compare-locales
+    entity = translation0.entity
+    entity.string = 'source string %s %d'
+    entity.save()
+
+    resource = entity.resource
+    resource.format = "properties"
+    resource.path = "test1.properties"
+    resource.save()
+
+    update_params["translation"] = "unapproved translation %"
+    update_params["force_suggestions"] = "true"
+    response = member0.client.post(
+        '/update/',
+        update_params,
+        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+    assert response.status_code == 200
+
+    # Translation that contains critical errors can't be updated.
+    assert response.json() == {
+        'checks': {
+            'clErrors': [u'Found single %'],
+        }
+    }
+    assert Translation.objects.last().approved is False

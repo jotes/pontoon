@@ -2537,12 +2537,13 @@ var Pontoon = (function (my) {
      *
      * warnings Array of warnings
      */
-    showQualityCheckWarnings: function(warnings) {
-      $('#quality ul').empty();
-      $(warnings).each(function() {
-        $('#quality ul').append('<li>' + this + '</li>');
+    showQualityChecks: function(checkType, checks) {
+      $(checks).each(function() {
+        $('#quality ul').append(
+            '<li class="' + checkType + '">' +
+            '<i class="fa fa-' + checkType + '"></i>' + this + '</li>'
+        );
       });
-      $('#quality').show();
     },
 
 
@@ -2607,9 +2608,26 @@ var Pontoon = (function (my) {
 
           goToNextTranslation();
 
-        } else if (data.warnings) {
+        } else if (data.checks) {
+          var checks = data.checks;
+
           self.endLoader();
-          self.showQualityCheckWarnings(data.warnings);
+
+          $('#quality ul').empty();
+
+          if (typeof(checks.ttWarnings) !== 'undefined') {
+              self.showQualityChecks('warning', checks.ttWarnings);
+          }
+
+          if (typeof(checks.clWarnings) !== 'undefined') {
+              self.showQualityChecks('warning', checks.clWarnings);
+          }
+
+          if (typeof(checks.clErrors) !== 'undefined') {
+              self.showQualityChecks('times-circle', checks.clErrors);
+          }
+
+          $('#quality').show();
 
         } else if (data.same) {
           self.endLoader(data.message, 'error');

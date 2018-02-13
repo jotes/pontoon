@@ -316,3 +316,11 @@ caighdean==0.0.3 \
 # Required by caighdean
 nltk==3.2.5 \
     --hash=sha256:2661f9971d983db314bbebd51ba770811a362c6597fd0f303bb1d3beadcb4834
+
+# ----------------------------------------------------------------------------------
+compare-locales==2.8.0 \
+    --hash=sha256:fab7f6ce6c26298ada2b95f380e2c031488bd8b2717f708296fbde1bcf040d6c
+
+# Required by compare-locales
+pytoml==0.1.14 \
+    --hash=sha256:aff69147d436c3ba8c7f3bc1b3f4aa3d7e47d305a495f2631872e6429694aabf

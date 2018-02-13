@@ -42,6 +42,8 @@ from pontoon.base.models import (
     UserProfile,
 )
 
+from pontoon.checks.utils import get_quality_checks
+
 
 log = logging.getLogger(__name__)
 
@@ -466,7 +468,6 @@ def update_translation(request):
         string = request.POST['translation']
         locale = request.POST['locale']
         plural_form = request.POST['plural_form']
-        original = request.POST['original']
         ignore_check = request.POST['ignore_check']
         approve = request.POST.get('approve', 'false') == 'true'
         force_suggestions = request.POST.get('force_suggestions', 'false') == 'true'
@@ -533,9 +534,9 @@ def update_translation(request):
                         'message': 'Same translation already exists.',
                     })
 
-                warnings = utils.quality_check(original, string, l, ignore)
-                if warnings:
-                    return warnings
+                checks = get_quality_checks(e, l, plural_form, string, ignore)
+                if checks:
+                    return checks
 
                 translations.update(
                     approved=False,
@@ -568,9 +569,9 @@ def update_translation(request):
             # If added by non-privileged user, unfuzzy it
             else:
                 if t.fuzzy:
-                    warnings = utils.quality_check(original, string, l, ignore)
-                    if warnings:
-                        return warnings
+                    checks = get_quality_checks(e, l, plural_form, string, ignore)
+                    if checks:
+                        return checks
 
                     t.approved = False
                     t.approved_user = None
@@ -592,9 +593,9 @@ def update_translation(request):
 
         # Different translation added
         else:
-            warnings = utils.quality_check(original, string, l, ignore)
-            if warnings:
-                return warnings
+            checks = get_quality_checks(e, l, plural_form, string, ignore)
+            if checks:
+                return checks
 
             if can_translate:
                 translations.update(approved=False, approved_user=None, approved_date=None)
@@ -626,9 +627,9 @@ def update_translation(request):
 
     # No translations saved yet
     else:
-        warnings = utils.quality_check(original, string, l, ignore)
-        if warnings:
-            return warnings
+        checks = get_quality_checks(e, l, plural_form, string, ignore)
+        if checks:
+            return checks
 
         t = Translation(
             entity=e, locale=l, user=user, string=string,
