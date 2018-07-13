@@ -70,7 +70,6 @@ def run_checks(entity, string):
             'Empty translations are not allowed'
         )
 
-
     # FTL checks
     if resource_ext == 'ftl' and string != '':
         translation_ast = parser.parse_entry(string)

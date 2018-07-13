@@ -16,6 +16,7 @@ from pontoon.checks.models import (
 
 log = logging.getLogger(__name__)
 
+
 @shared_task(bind=True)
 def bulk_run_checks(self, translations_pks):
     """
