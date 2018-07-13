@@ -47,13 +47,9 @@ class Command(BaseCommand):
 
         if not options['disabled_projects']:
             filter_qs['entity__resource__project__disabled'] = False
-        else:
-            log.debug('Include disabled projects')
 
         if not options['obsolete_entities']:
             filter_qs['entity__obsolete'] = False
-        else:
-            log.debug('Include obsolete entities')
 
         translations_pks = (
             Translation.objects

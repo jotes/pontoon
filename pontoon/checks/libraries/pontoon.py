@@ -13,6 +13,7 @@ from pontoon.sync.formats.ftl import localizable_entries
 
 MAX_LENGTH_RE = re.compile(r'MAX_LENGTH:( *)(\d+)', re.MULTILINE)
 parser = FluentParser()
+html_parser = HTMLParser.HTMLParser()
 
 
 def get_max_length(comment):
@@ -39,10 +40,15 @@ def run_checks(entity, string):
 
     # Prevent translations exceeding the given length limit
     if resource_ext == 'lang':
+        # Newlines are not allowed in .lang files (bug 1190754)
+        if '\n' in string:
+            checks['pErrors'].append(
+                'Newline characters are not allowed'
+            )
+
         max_length = get_max_length(entity.comment)
 
         if max_length:
-            html_parser = HTMLParser.HTMLParser()
             string_length = len(
                 html_parser.unescape(
                     bleach.clean(
@@ -64,11 +70,6 @@ def run_checks(entity, string):
             'Empty translations are not allowed'
         )
 
-    # Newlines are not allowed in .lang files (bug 1190754)
-    if resource_ext == 'lang' and '\n' in string:
-        checks['pErrors'].append(
-            'Newline characters are not allowed'
-        )
 
     # FTL checks
     if resource_ext == 'ftl' and string != '':
