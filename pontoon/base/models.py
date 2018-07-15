@@ -37,6 +37,7 @@ from pontoon.sync.vcs.repositories import (
     update_from_vcs,
     PullFromRepositoryException,
 )
+
 from pontoon.base import utils
 from pontoon.db import IContainsCollate  # noqa
 from pontoon.sync import KEY_SEPARATOR

@@ -578,3 +578,5 @@ class AuthorsTests(FakeCheckoutTestCase):
             )
             self.changeset.execute_update_vcs()
             assert_equal(self.changeset.commit_authors_per_locale[self.translated_locale.code], [])
+
+
