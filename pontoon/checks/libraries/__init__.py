@@ -30,8 +30,10 @@ def run_checks(
     try:
         cl_checks = compare_locales.run_checks(entity, locale_code, string)
     except compare_locales.UnsupportedStringError:
+        print "stringgerrr"
         cl_checks = None
     except compare_locales.UnsupportedResourceTypeError:
+        print "unsu"
         cl_checks = None
 
     tt_checks = {}
@@ -72,5 +74,6 @@ def run_checks(
     )
 
     checks.update(pontoon_checks)
-
+    print "AAAA", checks,entity.resource.format, entity.resource.path, cl_checks
+    print "BBB", original, string
     return checks
