@@ -23,7 +23,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.db import models
-from django.db.models import Count, F, Prefetch, Q, Sum
+from django.db.models import Count, F, Prefetch, Q, Sum, Value, When, Case
 from django.templatetags.static import static
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
@@ -2872,13 +2872,72 @@ class Translation(DirtyFieldsMixin, models.Model):
 
 
 class TranslationMemoryEntryManager(models.Manager):
+    def python_levenshtein(self, text, min_quality, min_length, max_length):
+        """
+
+        :param text:
+        :param min_quality:
+        :return:
+        """
+        # Map of
+        matches = {}
+        possible_matches = self.filter(
+
+        ).values_list('pk', 'string', 'source')
+
+        for pk, string, source in possible_matches:
+            quality = Levenshtein.ratio(string, source)
+
+            if quality >= min_quality:
+                matches[pk] = quality
+
+        if not matches:
+            return self.none()
+
+        # TODO: add more docs
+        # Add annotation with the quality of a string because its required to filter results later.
+        quality_cases = [
+            When(pk=pk, then=Value(quality * 100))
+            for pk, quality in matches.items()
+        ]
+
+        quality_annotation = Case(
+            *quality_cases,
+            default=Value(0),
+            output_field=models.IntegerField
+        )
+
+        matches_query = (
+            self.filter(
+                pk__in=matches.keys(),
+            )
+            .annotate(
+                quality=quality_annotation
+            )
+        )
+        return matches_query
+
     def minimum_levenshtein_ratio(self, text, min_quality=0.7):
         """
         Returns entries that match minimal levenshtein_ratio
         """
         length = len(text)
+        bytes_length = len(text.encode('utf-8'))
         min_dist = math.ceil(max(length * min_quality, 2))
         max_dist = math.floor(min(length / min_quality, 1000))
+
+        long_entries = self.none()
+
+        # `levenshtein` function implemented in `fuzzystrmatch` in Postgresql can 255 b
+        if max_dist > 255:
+            long_entries = self.python_levenhstein_ratio(
+                text,
+                min_quality,
+                255,
+                max_dist,
+            )
+            max_dist = 255
+
         levenshtein_ratio_equation = """(
             (char_length(source) + char_length(%s) - levenshtein(source, %s, 1, 2, 2))::float /
             (char_length(source) + char_length(%s))
@@ -2894,7 +2953,8 @@ class TranslationMemoryEntryManager(models.Manager):
             select={'quality': levenshtein_ratio_equation + '* 100'},
             select_params=(text, text, text)
         )
-        return entries
+
+        return entries | long_entries
 
 
 class TranslationMemoryEntry(models.Model):
