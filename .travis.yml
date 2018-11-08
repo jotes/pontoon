@@ -3,10 +3,12 @@ language: python
 python:
   - '2.7'
 cache:
+  npm: true
   bundler: true
   # cache the python dirs - this provides a very big speedup
   directories:
     - node_modules
+    - frontend/node_modules
     - $HOME/virtualenv/python2.7.14/bin
     - $HOME/virtualenv/python2.7.14/lib
     - $HOME/virtualenv/python2.7/bin
@@ -26,27 +28,10 @@ install:
   - source $HOME/.nvm/nvm.sh
   - nvm install node
   - nvm use node
-  - npm install .
-  - pushd frontend && npm install && popd
+  - npm install --no-audit .
+  - pushd frontend && npm install --no-audit && popd
 script:
-  # Lint code
-  - pylama pontoon
-  - pylama tests
-  - ./node_modules/.bin/eslint .
-
-  # Build and collect static assets
-  - ./node_modules/.bin/webpack
-  - pushd frontend && npm run build && popd
-  - python manage.py collectstatic -v0 --noinput
-
-  # Run tests
-  - py.test --cov-append --cov-report=term --cov=. -v --create-db --migrations
-  - npm test
-  - pushd frontend && npm test && popd
-  - codecov
-
-  # Heroku deployment file is valid
-  - cat app.json | python -m json.tool > /dev/null
+  - bash ./bin/travis.sh $CI_TASK
 
 addons:
   postgresql: "9.4"
@@ -64,6 +49,12 @@ before_cache:
   - cp -a $HOME/py-workaround/* $HOME/virtualenv/python2.7.14/lib/python2.7/site-packages/
 
 env:
+  matrix:
+    - CI_TASK=pylama
+    - CI_TASK=eslint
+    - CI_TASK=lint-heroku
+    - CI_TASK=test-backend
+    - CI_TASK=test-frontend
   global:
     - SECRET_KEY=asdf
     - DATABASE_URL=postgres://postgres@localhost/pontoon
