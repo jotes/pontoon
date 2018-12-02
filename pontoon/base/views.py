@@ -46,6 +46,7 @@ from pontoon.checks.libraries import run_checks
 from pontoon.checks.utils import (
     save_failed_checks,
     are_blocking_checks,
+    warnings_count,
 )
 
 
@@ -616,6 +617,15 @@ def update_translation(request):
                     translations.filter(active=True).update(active=False)
                     t.active = True
 
+                utils.update_translation_stats(
+                    t,
+                    approved_strings_diff=1,
+                    fuzzy_strings_diff=(-1 if t.fuzzy else 0),
+                    strings_with_warnings_diff=(
+                        warnings_count(failed_checks) - t.warnings.count()
+                    )
+                )
+
                 t.approved = True
                 t.fuzzy = False
                 t.rejected = False
@@ -656,6 +666,12 @@ def update_translation(request):
 
             t.save()
             save_failed_checks(t, failed_checks)
+            utils.update_translation_stats(
+                t,
+                total_strings_diff=1,
+                approved_strings_diff=can_translate,
+                warnings_strings_diff=warnings_count(failed_checks)-t.warnings.count(),
+            )
 
             active_translation = e.reset_active_translation(
                 locale=locale,
@@ -687,6 +703,13 @@ def update_translation(request):
 
         t.save()
         save_failed_checks(t, failed_checks)
+
+        utils.update_translation_stats(
+            t,
+            total_strings_diff=1,
+            approved_strings_diff=can_translate,
+            strings_with_warnings_diff=warnings_count(failed_checks)-t.warnings.count(),
+        )
 
         return JsonResponse({
             'type': 'saved',

@@ -525,12 +525,12 @@ class AggregatedStats(models.Model):
 
     def adjust_stats(
         self,
-        total_strings_diff,
-        approved_strings_diff,
-        fuzzy_strings_diff,
-        strings_with_errors_diff,
-        strings_with_warnings_diff,
-        unreviewed_strings_diff
+        total_strings_diff=0,
+        approved_strings_diff=0,
+        fuzzy_strings_diff=0,
+        strings_with_errors_diff=0,
+        strings_with_warnings_diff=0,
+        unreviewed_strings_diff=0,
     ):
         self.total_strings = F('total_strings') + total_strings_diff
         self.approved_strings = F('approved_strings') + approved_strings_diff
@@ -2316,6 +2316,10 @@ class Entity(DirtyFieldsMixin, models.Model):
         return utils.mark_placeables(self.string_plural)
 
     @property
+    def has_plural(self):
+        return bool(self.string_plural)
+
+    @property
     def cleaned_key(self):
         """
         Get cleaned key, without the source string and Translate Toolkit
@@ -2721,6 +2725,10 @@ class Translation(DirtyFieldsMixin, models.Model):
             ),
         ]
 
+    @property
+    def unreviewed(self):
+        return not(self.approved or self.fuzzy or self.rejected)
+
     @classmethod
     def for_locale_project_paths(self, locale, project, paths):
         """
@@ -2802,7 +2810,7 @@ class Translation(DirtyFieldsMixin, models.Model):
         translatedresource, _ = TranslatedResource.objects.get_or_create(
             resource=self.entity.resource, locale=self.locale
         )
-        translatedresource.calculate_stats()
+        # translatedresource.calculate_stats()
 
         # Whenever a translation changes, mark the entity as having
         # changed in the appropriate locale. We could be smarter about
@@ -2814,8 +2822,7 @@ class Translation(DirtyFieldsMixin, models.Model):
         self.update_latest_translation()
 
     def update_latest_translation(self):
-        """
-        Set `latest_translation` to this translation if its more recent than
+        """ Set `latest_translation` to this translation if its more recent than
         the currently stored translation. Do this for all affected models.
         """
         resource = self.entity.resource
@@ -2839,6 +2846,12 @@ class Translation(DirtyFieldsMixin, models.Model):
         """
         Unapprove translation.
         """
+        utils.update_translation_stats(
+            self,
+            approved_strings_diff=-1,
+            unreviewed_strings_diff=1,
+        )
+
         self.approved = False
         self.unapproved_user = user
         self.unapproved_date = timezone.now()
@@ -2857,6 +2870,13 @@ class Translation(DirtyFieldsMixin, models.Model):
             TranslationMemoryEntry.objects.filter(translation=self).delete()
             self.entity.mark_changed(self.locale)
 
+        utils.update_translation_stats(
+            self,
+            approved_strings_diff=(-1 if self.approved else 0),
+            fuzzy_strings_diff=(-1 if self.fuzzy else 0),
+            unreviewed_strings_diff=(-1 if self.unreviewed else 0),
+        )
+
         self.rejected = True
         self.rejected_user = user
         self.rejected_date = timezone.now()
@@ -2870,6 +2890,10 @@ class Translation(DirtyFieldsMixin, models.Model):
         """
         Unreject translation.
         """
+        utils.update_translation_stats(
+            self,
+            unreviewed_strings_diff=1,
+        )
         self.rejected = False
         self.unrejected_user = user
         self.unrejected_date = timezone.now()

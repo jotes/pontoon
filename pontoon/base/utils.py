@@ -737,3 +737,43 @@ def readonly_exists(projects, locale):
         locale=locale,
         readonly=True,
     ).exists()
+
+def update_translation_stats(translation, **stats_diff):
+    """
+
+    :param translation:
+    :return:
+    """
+    from pontoon.base.models import (
+        TranslatedResource,
+        ProjectLocale,
+    )
+
+    entity = translation.entity
+    resource = entity.resource
+    project = resource.project
+    locale = translation.locale
+
+    translated_resource, _ = TranslatedResource.objects.get_or_create(
+        resource=entity.resource,
+        locale=locale,
+    )
+
+    if translation.entity.has_plural:
+        stats_diff = {}
+        raise Exception('TODO')
+
+    translated_resource.adjust_stats(**stats_diff)
+    project.adjust_stats(**stats_diff)
+
+    if not project.system_project:
+        locale.adjust_stats(**stats_diff)
+
+    project_locale = get_object_or_none(
+        ProjectLocale,
+        project=project,
+        locale=locale,
+    )
+
+    if project_locale:
+        project_locale.adjust_stats(**stats_diff)

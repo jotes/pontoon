@@ -101,3 +101,15 @@ def are_blocking_checks(checks, ignore_warnings):
     has_errors = any(p.endswith('Errors') for p in checks)
 
     return (not ignore_warnings and checks) or has_errors
+
+
+def warnings_count(checks):
+    """
+    :param dict checks: dictionary with a list of errors/warnings per library
+    :return:
+    """
+    return sum(
+        len(fails)
+        for c, fails in checks.items()
+        if c.endswith('Warnings')
+    )
