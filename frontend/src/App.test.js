@@ -1,12 +1,12 @@
-// import React from 'react';
-// import ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-// import { shallow } from 'enzyme';
-// import sinon from 'sinon';
+import { shallow } from 'enzyme';
+import sinon from 'sinon';
 
-// import App from './App';
-// import store from 'store';
-
+import App, { AppLoader } from './App';
+import { createReduxStore } from "./test/store";
+import { shallowUntilTarget } from "./test/utils";
 
 describe('<App>', () => {
     it('renders without crashing', () => {
@@ -18,5 +18,40 @@ describe('<App>', () => {
         // const div = document.createElement('div');
         // ReactDOM.render(shallow(<App store={ store } />), div);
         // ReactDOM.unmountComponentAtNode(div);
+    });
+    it('render the loader before entities and locales will load', () => {
+        const loaderText = '"640K ought to be enough for anybody."';
+        let store = createReduxStore({
+            entities: {
+                fetching: true,
+            },
+            locales: {
+                fetching: true,
+            },
+        });
+        let app = shallowUntilTarget(<App store={store} />, AppLoader);
+        expect(app.text()).toContain(loaderText);
+
+        store = createReduxStore({
+            entities: {
+                fetching: false,
+            },
+            locales: {
+                fetching: true,
+            },
+        });
+        app = shallowUntilTarget(<App store={store} />, AppLoader);
+        expect(app.text()).toContain(loaderText);
+
+        store = createReduxStore({
+            entities: {
+                fetching: true,
+            },
+            locales: {
+                fetching: false,
+            },
+        });
+        app = shallowUntilTarget(<App store={store} />, AppLoader);
+        expect(app.text()).toContain(loaderText);
     });
 });
