@@ -38,7 +38,7 @@ export const AppLoader = () => (
                   <div></div>&nbsp;
                   <div></div>
             </div>
-            <div className="text">"640K ought to be enough for anybody."</div>
+            <div className="text">&quot;640K ought to be enough for anybody.&quot;</div>
         </div>
     </div>
 );
@@ -55,8 +55,8 @@ class App extends React.Component<InternalProps> {
         const {entities, locales} = this.props;
 
         if (entities.fetching || locales.fetching) {
-            return <AppLoader />;
-        };
+            return <AppLoader />
+        }
 
         return <div id="app">
             <UserAutoUpdater />

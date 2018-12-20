@@ -1,8 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-
-import { shallow } from 'enzyme';
-import sinon from 'sinon';
 
 import App, { AppLoader } from './App';
 import { createReduxStore } from "./test/store";
