@@ -245,6 +245,7 @@ def _get_paginated_entities(locale, project, form, entities):
 @utils.require_AJAX
 def entities(request):
     """Get entities for the specified project, locale and paths."""
+    import time; time.sleep(50)
     form = forms.GetEntitiesForm(request.POST)
     if not form.is_valid():
         return HttpResponseBadRequest(form.errors.as_json())

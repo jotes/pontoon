@@ -2663,7 +2663,7 @@ class Translation(DirtyFieldsMixin, models.Model):
     locale = models.ForeignKey(Locale)
     user = models.ForeignKey(User, null=True, blank=True)
     string = models.TextField()
-    # Index of Locale.cldr_plurals_list()
+    # Loadingbar of Locale.cldr_plurals_list()
     plural_form = models.SmallIntegerField(null=True, blank=True)
     date = models.DateTimeField(default=timezone.now)
 

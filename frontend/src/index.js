@@ -8,6 +8,7 @@ import { ConnectedRouter } from 'connected-react-router';
 import './index.css';
 
 import { AppLocalizationProvider } from 'core/l10n';
+import Loadingbar from 'core/loader/components/Loader';
 
 import history from './history';
 import store from './store';
@@ -18,9 +19,11 @@ ReactDOM.render(
     (
         <Provider store={ store }>
             <ConnectedRouter history={ history }>
-                <AppLocalizationProvider>
-                    <App />
-                </AppLocalizationProvider>
+                <Loadingbar>
+                    <AppLocalizationProvider>
+                        <App />
+                    </AppLocalizationProvider>
+                </Loadingbar>
             </ConnectedRouter>
         </Provider>
     ),

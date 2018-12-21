@@ -51,11 +51,11 @@
 
 ### Modules
 
-Each module should be in a folder and have an `index.js` file that serves as the module's public interface. Outside of the module, always import from the module's index, and never from specific files. This allows us to easily evolve modules and keep things decoupled, which reduces code complexity.
+Each module should be in a folder and have an `Loader.js` file that serves as the module's public interface. Outside of the module, always import from the module's index, and never from specific files. This allows us to easily evolve modules and keep things decoupled, which reduces code complexity.
 
 Here are the files commonly found in a module:
 
-- `index.js` — public interface of the module
+- `Loader.js` — public interface of the module
 - `actions.js` — actions that can be used to fetch data from an API, trigger changes, etc.
 - `reducer.js` — a single Redux reducer (if you need to have more than one reducer, you probably actually need to make several modules)
 - `constants.js` — a list of constants required by the module or other modules. It is recommended to define a NAME constant here which should be a unique identifier of the module. This name will be used in `combineReducers` and in all `mapStateToProps` to identify the subtree of the global state relevant to this module.

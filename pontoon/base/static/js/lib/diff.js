@@ -408,8 +408,8 @@ diff_match_patch.prototype.diff_bisect_ = function(text1, text2, deadline) {
  * and recurse.
  * @param {string} text1 Old string to be diffed.
  * @param {string} text2 New string to be diffed.
- * @param {number} x Index of split point in text1.
- * @param {number} y Index of split point in text2.
+ * @param {number} x Loadingbar of split point in text1.
+ * @param {number} y Loadingbar of split point in text2.
  * @param {number} deadline Time at which to bail if not yet complete.
  * @return {!Array.<!diff_match_patch.Diff>} Array of diff tuples.
  * @private
@@ -733,7 +733,7 @@ diff_match_patch.prototype.diff_cleanupSemantic = function(diffs) {
   /** @type {?string} */
   var lastequality = null;
   // Always equal to diffs[equalities[equalitiesLength - 1]][1]
-  var pointer = 0;  // Index of current position.
+  var pointer = 0;  // Loadingbar of current position.
   // Number of characters that changed prior to the equality.
   var length_insertions1 = 0;
   var length_deletions1 = 0;
@@ -978,7 +978,7 @@ diff_match_patch.prototype.diff_cleanupEfficiency = function(diffs) {
   /** @type {?string} */
   var lastequality = null;
   // Always equal to diffs[equalities[equalitiesLength - 1]][1]
-  var pointer = 0;  // Index of current position.
+  var pointer = 0;  // Loadingbar of current position.
   // Is there an insertion operation before the last equality.
   var pre_ins = false;
   // Is there a deletion operation before the last equality.
