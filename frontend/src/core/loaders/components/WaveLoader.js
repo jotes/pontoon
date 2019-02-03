@@ -18,7 +18,6 @@ export const WaveLoader = (): React.Node => (
                 &nbsp;
                 <div></div>
             </div>
-            <div className="text">&quot;640K ought to be enough for anybody.&quot;</div>
         </div>
     </div>
 );
