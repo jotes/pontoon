@@ -124,13 +124,13 @@ Note that we use a specific format for our dependencies, in order to make them m
 
 For example, to add ``foobar`` version 5::
 
-  $ hashin -r requirements.txt foobar==5
+  $ hashin -r requirements/default.txt foobar==5
 
-Then open ``requirements.txt`` and move the added dependencies to:
-* the first section if it has no other requirements
-* the second section if it has sub-dependencies, and add all its dependencies there as well.
+Then open ``requirements/default.txt`` and move the added dependencies to:
+* the first section if they're the top-level requirements
+* the ``requirements/constraints.txt`` if they are sub-dependencies, and add all their dependencies there as well.
 
-That format is documented more extensively inside the ``requirements.txt`` file.
+That format is documented more extensively inside the ``requirements/default.txt`` file.
 
 Once you are done adding or updating requirements, rebuild your docker environment::
 
@@ -153,7 +153,7 @@ a virtualenv to build docs, do this:
     $ cd docs/
     $ virtualenv venv
     $ source venv/bin/activate
-    $ pip install --require-hashes -r requirements.txt
+    $ pip install --require-hashes -r requirements/default.txt
 
 Then, to build the docs, run this:
 
@@ -247,7 +247,7 @@ steps, as they don't affect your setup if nothing has changed:
    git pull origin master
 
    # Install new dependencies or update existing ones.
-   pip install -U --force --require-hashes -r requirements.txt
+   pip install -U --force --require-hashes -c requirements/constraints.txt -r requirements/default.txt
 
    # Run database migrations.
    python manage.py migrate
