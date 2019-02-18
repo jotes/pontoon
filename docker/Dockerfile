@@ -12,8 +12,8 @@ RUN useradd --shell /bin/bash -c "" -m app
 # Install Pontoon Python requirements
 COPY requirements/* /app/requirements/
 RUN pip install -U 'pip>=8' && \
-    pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/test.txt
+    pip install --no-cache-dir --require-hashes -r requirements/dev.txt -c requirements/constraints.txt && \
+    pip install --no-cache-dir --require-hashes -r requirements/test.txt -c requirements/constraints.txt
 
 # Install nodejs and npm from Nodesource's 10.x branch, as well as yarn
 RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \

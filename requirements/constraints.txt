@@ -11,7 +11,8 @@
 #
 #   # Required by resource1
 #   depB
-# 
+#
+
 # ==================================================================================
 # Required by bleach
 webencodings==0.5.1 \
@@ -158,6 +159,8 @@ diff-match-patch==20121119 \
 # Required by caighdean
 nltk==3.2.5 \
     --hash=sha256:2661f9971d983db314bbebd51ba770811a362c6597fd0f303bb1d3beadcb4834
+requests==2.21.0 \
+    --hash=sha256=7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b
 
 # ----------------------------------------------------------------------------------
 # Required by compare-locales
