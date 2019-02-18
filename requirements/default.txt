@@ -75,6 +75,9 @@ django-cookies-samesite==0.1.2 \
 django-session-csrf==0.7.1 \
     --hash=sha256:e17177e6e2e6518ec7ce6693ad10a5c747f8571d09f4cfa9082599334421605d \
     --hash=sha256:ff8c10e30d312c77fc6a6db7710e22b9383e28c03b7fe958876ca96f39aa6cf2
+django-waffle==0.14.0 \
+    --hash=sha256:f243a56db80bd28601222b1a8a0b1fa4e7e6ac1bbf809952c3725cb4cc0012d9 \
+    --hash=sha256:f3db39cc17d6e388a485230b6029095e5d6fba4ceaff8d4fcc21f95c47fe2e97
 django-webpack-loader==0.5.0 \
     --hash=sha256:0a8536e36a30d719018cd4c5da6e9d2377771134e713c14e617bb484b4f0acce
 factory-boy==2.5.2 \
@@ -133,3 +136,5 @@ whitenoise==1.0.6 \
 https://github.com/mathjazz/silme/archive/v0.9.4.zip#egg=silme==0.9.4 \
     --hash=sha256:473c20e2d955359e69e84db8904db1a49fc10ecd2f8864c005404d070bd67b0c
 
+https://github.com/mathjazz/translate/archive/2.2.5.zip#egg=translate-toolkit==2.2.5 \
+--hash=sha256:9a23bda0f3ec07f36b6b662bf2a25492b6a354709500c736213229e94f462443

@@ -160,7 +160,7 @@ diff-match-patch==20121119 \
 nltk==3.2.5 \
     --hash=sha256:2661f9971d983db314bbebd51ba770811a362c6597fd0f303bb1d3beadcb4834
 requests==2.21.0 \
-    --hash=sha256=7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b
+    --hash=sha256:7bf2a778576d825600030a110f3c0e3e8edc51dfaafe1c146e39a2027784957b
 
 # ----------------------------------------------------------------------------------
 # Required by compare-locales
@@ -168,9 +168,6 @@ fluent==0.10.0 \
     --hash=sha256:b5a270e6e4425cdf140ea10d1a7d9c1af713dd00d61b0412f05cd22e1ff84324
 pytoml==0.1.14 \
     --hash=sha256:aff69147d436c3ba8c7f3bc1b3f4aa3d7e47d305a495f2631872e6429694aabf
-django-waffle==0.14.0 \
-    --hash=sha256:f243a56db80bd28601222b1a8a0b1fa4e7e6ac1bbf809952c3725cb4cc0012d9 \
-    --hash=sha256:f3db39cc17d6e388a485230b6029095e5d6fba4ceaff8d4fcc21f95c47fe2e97
 
 # ----------------------------------------------------------------------------------
 # Required by django-bmemcached
