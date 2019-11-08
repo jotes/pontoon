@@ -13,25 +13,26 @@ class RaygunExceptionMiddleware(Provider):
         # Ignore non-failure exceptions. We don't need to be notified
         # of these.
         if not isinstance(exception, (Http404, PermissionDenied)):
-            return (super(RaygunExceptionMiddleware, self)
-                    .process_exception(request, text_type(exception).encode('utf-8')))
+            return super(RaygunExceptionMiddleware, self).process_exception(
+                request, text_type(exception).encode("utf-8")
+            )
 
 
 class BlockedIpMiddleware(object):
     def process_request(self, request):
         try:
-            ip = request.META['HTTP_X_FORWARDED_FOR']
+            ip = request.META["HTTP_X_FORWARDED_FOR"]
             # If comma-separated list of IPs, take just the last one
             # http://stackoverflow.com/a/18517550
-            ip = ip.split(',')[-1]
+            ip = ip.split(",")[-1]
         except KeyError:
-            ip = request.META['REMOTE_ADDR']
+            ip = request.META["REMOTE_ADDR"]
 
         ip = ip.strip()
 
         # Block client IP addresses via settings variable BLOCKED_IPS
         if ip in settings.BLOCKED_IPS:
-            return HttpResponseForbidden('<h1>Forbidden</h1>')
+            return HttpResponseForbidden("<h1>Forbidden</h1>")
 
         return None
 
@@ -45,7 +46,7 @@ class AutomaticLoginUserMiddleware(object):
         if settings.AUTO_LOGIN and not request.user.is_authenticated():
             user = auth.authenticate(
                 username=settings.AUTO_LOGIN_USERNAME,
-                password=settings.AUTO_LOGIN_PASSWORD
+                password=settings.AUTO_LOGIN_PASSWORD,
             )
 
             if user:

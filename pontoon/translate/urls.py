@@ -6,26 +6,22 @@ from django.conf.urls import url
 from . import URL_BASE, views
 
 
-LOCALE_PART = r'(?P<locale>[A-Za-z0-9\-\@\.]+)'
-PROJECT_PART = r'(?P<project>[\w-]+)'
-RESOURCE_PART = r'(?P<resource>.+)'
+LOCALE_PART = r"(?P<locale>[A-Za-z0-9\-\@\.]+)"
+PROJECT_PART = r"(?P<project>[\w-]+)"
+RESOURCE_PART = r"(?P<resource>.+)"
 
 
 urlpatterns = [
+    url(r"^%s$" % URL_BASE, views.translate, name="pontoon.translate.next",),
     url(
-        r'^%s$' % URL_BASE,
-        views.translate,
-        name='pontoon.translate.next',
-    ),
-    url(
-        r'^{base}{locale}/{project}/{resource}/$'.format(
+        r"^{base}{locale}/{project}/{resource}/$".format(
             base=URL_BASE,
             locale=LOCALE_PART,
             project=PROJECT_PART,
             resource=RESOURCE_PART,
         ),
         views.translate,
-        name='pontoon.translate.next',
+        name="pontoon.translate.next",
     ),
 ]
 
@@ -41,12 +37,6 @@ urlpatterns = [
 # automatically done when running with `make run`.
 if settings.DEV:
     urlpatterns += [
-        url(
-            r'^static/(?P<path>.*)$',
-            views.static_serve_dev,
-        ),
-        url(
-            r'^sockjs-node/.*$',
-            views.translate,
-        ),
+        url(r"^static/(?P<path>.*)$", views.static_serve_dev,),
+        url(r"^sockjs-node/.*$", views.translate,),
     ]

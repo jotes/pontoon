@@ -1,1 +1,1 @@
-URL_BASE = 'translate/'
+URL_BASE = "translate/"

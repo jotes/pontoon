@@ -22,12 +22,7 @@ class TagsTool(Clonable):
     resources_class = TagsResourcesTool
     translations_class = TagsLatestTranslationsTool
     stats_class = TagsStatsTool
-    clone_kwargs = (
-        'locales',
-        'projects',
-        'priority',
-        'path',
-        'slug')
+    clone_kwargs = ("locales", "projects", "priority", "path", "slug")
 
     def __getitem__(self, k):
         return self(slug=k)
@@ -45,10 +40,8 @@ class TagsTool(Clonable):
     @cached_property
     def resource_tool(self):
         return self.resources_class(
-            projects=self.projects,
-            locales=self.locales,
-            slug=self.slug,
-            path=self.path)
+            projects=self.projects, locales=self.locales, slug=self.slug, path=self.path
+        )
 
     @cached_property
     def stat_tool(self):
@@ -57,14 +50,14 @@ class TagsTool(Clonable):
             locales=self.locales,
             projects=self.projects,
             priority=self.priority,
-            path=self.path)
+            path=self.path,
+        )
 
     @cached_property
     def translation_tool(self):
         return self.translations_class(
-            slug=self.slug,
-            locales=self.locales,
-            projects=self.projects)
+            slug=self.slug, locales=self.locales, projects=self.projects
+        )
 
     def get(self, slug=None):
         """Get the first tag by iterating self, or by slug if set
@@ -77,7 +70,8 @@ class TagsTool(Clonable):
         """Get `values` of associated tags, filtering by slug if given
         """
         tags = self.tag_manager.filter(project__in=self.projects).values(
-            "pk", "name", "slug", "priority", "project")
+            "pk", "name", "slug", "priority", "project"
+        )
         if slug:
             return tags.filter(slug__regex=glob_to_regex(slug))
         return tags
@@ -87,9 +81,5 @@ class TagsTool(Clonable):
         each, adding latest translation data
         """
         for tag in tags:
-            latest_translation = self.translation_tool.data.get(
-                tag["resource__tag"])
-            yield self.tag_class(
-                self,
-                latest_translation=latest_translation,
-                **tag)
+            latest_translation = self.translation_tool.data.get(tag["resource__tag"])
+            yield self.tag_class(self, latest_translation=latest_translation, **tag)

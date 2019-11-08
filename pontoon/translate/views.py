@@ -29,7 +29,7 @@ from pontoon.base.models import (
 from . import URL_BASE
 
 
-UPSTREAM = 'http://localhost:3000'
+UPSTREAM = "http://localhost:3000"
 
 
 def static_serve_dev(request, path):
@@ -62,22 +62,22 @@ def catchall_dev(request, context=None):
 
     """
     # Redirect websocket requests directly to the webpack server.
-    if request.META.get('HTTP_UPGRADE', '').lower() == 'websocket':
+    if request.META.get("HTTP_UPGRADE", "").lower() == "websocket":
         return http.HttpResponseRedirect(UPSTREAM + request.path)
 
     # Until we change it, this app doesn't live at the root of our website.
     # Since the frontend server is at the root, and won't recognize our URL,
     # we need to remove the base part of the path before proxying.
-    request_path = request.path.replace(URL_BASE, '')
+    request_path = request.path.replace(URL_BASE, "")
     upstream_url = UPSTREAM + request_path
-    method = request.META['REQUEST_METHOD'].lower()
+    method = request.META["REQUEST_METHOD"].lower()
     response = getattr(requests, method)(upstream_url, stream=True)
-    content_type = response.headers.get('Content-Type')
+    content_type = response.headers.get("Content-Type")
 
-    if content_type == 'text/html; charset=UTF-8':
+    if content_type == "text/html; charset=UTF-8":
         return http.HttpResponse(
             content=(
-                engines['jinja2']
+                engines["jinja2"]
                 .from_string(response.text)
                 .render(request=request, context=context)
             ),
@@ -97,7 +97,7 @@ def catchall_dev(request, context=None):
 # static folders. We can thus simply return a template view of index.html.
 @ensure_csrf_cookie
 def catchall_prod(request, context=None):
-    return render(request, 'index.html', context=context, using='jinja2')
+    return render(request, "index.html", context=context, using="jinja2")
 
 
 def get_preferred_locale(request):
@@ -116,18 +116,14 @@ def get_preferred_locale(request):
 def translate(request, locale=None, project=None, resource=None):
     # Redirect the user to the old Translate page if needed.
     # To be removed as part of bug 1527853.
-    if not waffle.flag_is_active(request, 'translate_next'):
+    if not waffle.flag_is_active(request, "translate_next"):
         url = reverse(
-            'pontoon.translate',
-            kwargs={
-                'slug': project,
-                'locale': locale,
-                'part': resource,
-            }
+            "pontoon.translate",
+            kwargs={"slug": project, "locale": locale, "part": resource,},
         )
         query = request.GET.urlencode()
         if query:
-            url += '?' + query
+            url += "?" + query
 
         return redirect(url)
 
@@ -138,7 +134,7 @@ def translate(request, locale=None, project=None, resource=None):
         locale = get_object_or_404(Locale, code=locale)
 
         # Validate Project
-        if project.lower() != 'all-projects':
+        if project.lower() != "all-projects":
             project = get_object_or_404(Project.objects.available(), slug=project)
 
             # Validate ProjectLocale
@@ -146,17 +142,16 @@ def translate(request, locale=None, project=None, resource=None):
                 raise Http404
 
     context = {
-        'locale': get_preferred_locale(request),
-        'notifications': [],
+        "locale": get_preferred_locale(request),
+        "notifications": [],
     }
 
     # Get system notifications and pass them down. We need to transform the
     # django object so that it can be turned into JSON.
     notifications = messages.get_messages(request)
     if notifications:
-        context['notifications'] = map(
-            lambda x: {'content': str(x), 'type': x.tags},
-            notifications
+        context["notifications"] = map(
+            lambda x: {"content": str(x), "type": x.tags}, notifications
         )
 
     if settings.DEBUG:

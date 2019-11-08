@@ -18,29 +18,33 @@ FXA_PROVIDER_ID = FirefoxAccountsProvider.id
 
 
 class Command(BaseCommand):
-    help = ('Ensures an allauth application for Firefox Accounts exists and has '
-            'credentials that match settings')
+    help = (
+        "Ensures an allauth application for Firefox Accounts exists and has "
+        "credentials that match settings"
+    )
 
     def handle(self, *args, **options):
         # Check if FXA_* settings are configured, bail if not.
         if settings.FXA_CLIENT_ID is None or settings.FXA_SECRET_KEY is None:
-            self.stdout.write("FXA_* settings unavailable; "
-                              "skipping provider config.")
+            self.stdout.write(
+                "FXA_* settings unavailable; " "skipping provider config."
+            )
             return
 
         # Grab the credentials from settings
         data = dict(
-            name='FxA',
+            name="FxA",
             provider=FXA_PROVIDER_ID,
             client_id=settings.FXA_CLIENT_ID,
-            secret=settings.FXA_SECRET_KEY
+            secret=settings.FXA_SECRET_KEY,
         )
 
         try:
             # Update the existing provider with current settings.
             app = SocialApp.objects.get(provider=FXA_PROVIDER_ID)
-            self.stdout.write("Updating existing Firefox Accounts provider "
-                              "(pk=%s)" % app.pk)
+            self.stdout.write(
+                "Updating existing Firefox Accounts provider " "(pk=%s)" % app.pk
+            )
             for k, v in data.items():
                 setattr(app, k, v)
             app.save()
@@ -48,8 +52,7 @@ class Command(BaseCommand):
             # Create the provider if necessary.
             app = SocialApp(**data)
             app.save()
-            self.stdout.write("Created new Firefox Accounts provider (pk=%s)" %
-                              app.pk)
+            self.stdout.write("Created new Firefox Accounts provider (pk=%s)" % app.pk)
 
         # Ensure the provider applies to the current default site.
         sites_count = app.sites.count()

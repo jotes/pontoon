@@ -4,11 +4,7 @@ import codecs
 import copy
 import logging
 
-from fluent.syntax import (
-    ast,
-    FluentParser,
-    FluentSerializer
-)
+from fluent.syntax import ast, FluentParser, FluentSerializer
 
 from pontoon.sync import SyncError
 from pontoon.sync.formats.base import ParsedResource
@@ -27,8 +23,15 @@ class FTLEntity(VCSTranslation):
     """
     Represents entities in FTL (without its attributes).
     """
+
     def __init__(
-        self, key, source_string, source_string_plural, strings, comments=None, order=None
+        self,
+        key,
+        source_string,
+        source_string_plural,
+        strings,
+        comments=None,
+        order=None,
     ):
         super(FTLEntity, self).__init__(
             key=key,
@@ -41,7 +44,7 @@ class FTLEntity(VCSTranslation):
         )
 
     def __repr__(self):
-        return '<FTLEntity {key}>'.format(key=self.key.encode('utf-8'))
+        return "<FTLEntity {key}>".format(key=self.key.encode("utf-8"))
 
 
 class FTLResource(ParsedResource):
@@ -56,16 +59,11 @@ class FTLResource(ParsedResource):
         if source_resource:
             for key, entity in source_resource.entities.items():
                 self.entities[key] = FTLEntity(
-                    entity.key,
-                    '',
-                    '',
-                    {},
-                    copy.copy(entity.comments),
-                    entity.order
+                    entity.key, "", "", {}, copy.copy(entity.comments), entity.order
                 )
 
         try:
-            with codecs.open(path, 'r', 'utf-8') as resource:
+            with codecs.open(path, "r", "utf-8") as resource:
                 self.structure = parser.parse(resource.read())
         except IOError:
             # If the file doesn't exist, but we have a source resource,
@@ -88,10 +86,10 @@ class FTLResource(ParsedResource):
                 self.entities[key] = FTLEntity(
                     key,
                     translation,
-                    '',
+                    "",
                     {None: translation},
                     group_comment + comment,
-                    self.order
+                    self.order,
                 )
                 self.order += 1
 
@@ -110,11 +108,12 @@ class FTLResource(ParsedResource):
         """
         if not self.source_resource:
             raise SyncError(
-                'Cannot save FTL resource {0}: No source resource given.'
-                .format(self.path)
+                "Cannot save FTL resource {0}: No source resource given.".format(
+                    self.path
+                )
             )
 
-        with codecs.open(self.source_resource.path, 'r', 'utf-8') as resource:
+        with codecs.open(self.source_resource.path, "r", "utf-8") as resource:
             structure = parser.parse(resource.read())
 
         entities = structure.body
@@ -135,8 +134,8 @@ class FTLResource(ParsedResource):
 
         create_parent_directory(self.path)
 
-        with codecs.open(self.path, 'w+', 'utf-8') as f:
-            log.debug('Saving file: %s', self.path)
+        with codecs.open(self.path, "w+", "utf-8") as f:
+            log.debug("Saving file: %s", self.path)
             f.write(serializer.serialize(structure))
 
 
@@ -148,7 +147,7 @@ def get_key(obj):
     key = obj.id.name
 
     if isinstance(obj, ast.Term):
-        return '-' + key
+        return "-" + key
 
     return key
 
