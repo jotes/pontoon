@@ -1,5 +1,6 @@
 DC := $(shell which docker-compose)
 DOCKER := $(shell which docker)
+CELERY_SERVICES := celery-rabbitmq celery-worker
 export PYTHON_VERSION := 2.7.17
 export PYTHON_3_VERSION := 3.7.5
 
@@ -55,7 +56,6 @@ pytest-py3: pytest
 
 setup: .docker-build
 	${DC} run webapp /app/docker/set_up_webapp.sh
-
 run: .docker-build
 	${DC} run --rm --service-ports webapp
 
@@ -101,3 +101,9 @@ build-frontend:
 
 build-frontend-w:
 	${DC} run --rm webapp npm run build-w
+
+build-celery:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml build $(CELERY_SERVICES)
+
+run-celery: export CELERY_BROKER_URL
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml up $(CELERY_SERVICES)

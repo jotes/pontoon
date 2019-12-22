@@ -1,0 +1,18 @@
+version: "2"
+services:
+  celery-rabbitmq:
+    image: rabbitmq:3.8.2
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: ./docker/celery/Dockerfile
+      args:
+        python_version: "${PYTHON_VERSION}"
+    image: local/pontoon_celery_py${PYTHON_VERSION}
+    volumes:
+      - ./pontoon:/app/pontoon
+    depends_on:
+      - postgresql
+    env_file:
+      - docker/config/webapp.env
