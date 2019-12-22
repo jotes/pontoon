@@ -1,5 +1,7 @@
 DC := $(shell which docker-compose)
 DOCKER := $(shell which docker)
+CELERY_SERVICES := celery-memcached celery-rabbitmq celery-worker
+export DOCKER_ENV_FILE := webapp
 
 # *IMPORTANT*
 # Don't use this instance in a production setting. More info at:
@@ -85,3 +87,23 @@ build-frontend:
 
 build-frontend-w:
 	"${DC}" run --rm webapp npm run build-w
+
+build-celery:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml build $(CELERY_SERVICES)
+
+run-with-celery: export DOCKER_ENV_FILE = webapp-celery
+run-with-celery:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml up $(CELERY_SERVICES) webapp
+
+run-sync-projects: export DOCKER_ENV_FILE = webapp-celery
+run-sync-projects:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml exec webapp ./manage.py sync_projects
+
+run-docker:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml $(cmd)
+
+run-rabbitmqctl:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml exec celery-rabbitmq rabbitmqctl $(cmd)
+
+compose:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml $(cmd) $(service)

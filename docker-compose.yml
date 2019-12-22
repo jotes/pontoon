@@ -10,7 +10,7 @@ services:
       dockerfile: ./docker/Dockerfile
     image: local/pontoon
     env_file:
-      - docker/config/webapp.env
+      - "docker/config/${DOCKER_ENV_FILE}.env"
     depends_on:
       - postgresql
     ports:

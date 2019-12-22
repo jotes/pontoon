@@ -1,0 +1,24 @@
+version: "2"
+services:
+  celery-memcached:
+    image: memcached:1.5.20
+
+  celery-rabbitmq:
+    image: rabbitmq:3.8.2
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: ./docker/celery/Dockerfile
+      args:
+        python_version: "${PYTHON_VERSION}"
+    image: local/pontoon_celery_py${PYTHON_VERSION}
+    volumes:
+      - ./pontoon:/app/pontoon
+    depends_on:
+      - postgresql
+      - celery-rabbitmq
+    command: celery worker --app=pontoon.base.celeryapp --loglevel=info --without-gossip --without-mingle --without-heartbeat
+    env_file:
+      - "docker/config/${DOCKER_ENV_FILE}.env"
+
