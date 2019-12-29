@@ -1,6 +1,7 @@
 DC := $(shell which docker-compose)
 DOCKER := $(shell which docker)
 CELERY_SERVICES := celery-rabbitmq celery-worker
+export DOCKER_ENV_FILE := webapp
 export PYTHON_VERSION := 2.7.17
 export PYTHON_3_VERSION := 3.7.5
 
@@ -105,5 +106,10 @@ build-frontend-w:
 build-celery:
 	${DC} -f docker-compose.yml -f docker-compose.celery.yml build $(CELERY_SERVICES)
 
-run-celery: export CELERY_BROKER_URL
-	${DC} -f docker-compose.yml -f docker-compose.celery.yml up $(CELERY_SERVICES)
+run-with-celery: export DOCKER_ENV_FILE = webapp-celery
+run-with-celery:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml up $(CELERY_SERVICES) webapp
+
+run-sync-projects: export DOCKER_ENV_FILE = webapp-celery
+run-sync-projects:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml exec webapp ./manage.py sync_projects

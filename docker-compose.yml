@@ -12,7 +12,7 @@ services:
         python_version: "${PYTHON_VERSION}"
     image: local/pontoon_py${PYTHON_VERSION}
     env_file:
-      - docker/config/webapp.env
+      - "docker/config/${DOCKER_ENV_FILE}.env"
     depends_on:
       - postgresql
     ports:

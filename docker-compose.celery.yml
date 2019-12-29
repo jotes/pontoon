@@ -14,5 +14,8 @@ services:
       - ./pontoon:/app/pontoon
     depends_on:
       - postgresql
+      - celery-rabbitmq
+    command: celery worker --app=pontoon.base.celeryapp --loglevel=info --without-gossip --without-mingle --without-heartbeat
     env_file:
-      - docker/config/webapp.env
+      - "docker/config/${DOCKER_ENV_FILE}.env"
+
