@@ -1,5 +1,8 @@
 version: "2"
 services:
+  celery-memcached:
+    image: memcached:1.5.20
+
   celery-rabbitmq:
     image: rabbitmq:3.8.2
 
