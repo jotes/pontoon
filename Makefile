@@ -117,5 +117,8 @@ run-sync-projects:
 run-docker:
 	${DC} -f docker-compose.yml -f docker-compose.celery.yml $(cmd)
 
+run-rabbitmqctl:
+	${DC} -f docker-compose.yml -f docker-compose.celery.yml exec celery-rabbitmq rabbitmqctl $(cmd)
+
 compose:
 	${DC} -f docker-compose.yml -f docker-compose.celery.yml $(cmd) $(service)
