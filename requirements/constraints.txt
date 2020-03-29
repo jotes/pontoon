@@ -365,9 +365,9 @@ snowballstemmer==1.2.1 \
     --hash=sha256:9f3bcd3c401c3e862ec0ebe6d2c069ebc012ce142cce209c098ccb5b09136e89
 
 # >=1.4.33 pytest
-py==1.4.34 \
-    --hash=sha256:2ccb79b01769d99115aa600d7eed99f524bf752bba8f041dc1c184853514655a \
-    --hash=sha256:0f2d585d22050e90c7d293b6451c83db097df77871974d90efd5a30dc12fcde3
+py==1.8.1 \
+    --hash=sha256:5e27081401262157467ad6e7f851b7aa402c5852dbcb3dae06768434de5752aa \
+    --hash=sha256:c20fdd83a5dbc0af9efd622bee9a5564e278f6380fffcacc43ba6f43db2813b0
 
 # >=0.10.1 wsgi-sslify
 Werkzeug==0.15.5 \
@@ -377,3 +377,9 @@ Werkzeug==0.15.5 \
 # django-debug-toolbar
 sqlparse==0.1.19 \
     --hash=sha256:d896be1a1c7f24bffe08d7a64e6f0176b260e281c5f3685afe7826f8bada4ee8
+apipkg==1.5 \
+    --hash=sha256:37228cda29411948b422fae072f57e31d3396d2ee1c9783775980ee9c9990af6 \
+    --hash=sha256:58587dd4dc3daefad0487f6d9ae32b4542b185e1c36db6993290e7c41ca2b47c
+wcwidth==0.1.9 \
+    --hash=sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1 \
+    --hash=sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1

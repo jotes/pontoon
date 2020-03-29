@@ -3252,6 +3252,7 @@ class TranslationMemoryEntryQuerySet(models.QuerySet):
         # Only check entities with similar length
         length = len(text)
         min_dist = int(math.ceil(max(length * min_quality, 2)))
+
         max_dist = int(math.floor(min(length / min_quality, 1000)))
 
         get_matches = self.postgres_levenshtein_ratio
