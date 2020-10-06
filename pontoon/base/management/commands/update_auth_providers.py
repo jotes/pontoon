@@ -13,14 +13,14 @@ from allauth.socialaccount.providers.fxa.provider import FirefoxAccountsProvider
 from allauth.socialaccount.providers.github.provider import GitHubProvider
 from allauth.socialaccount.providers.gitlab.provider import GitLabProvider
 from allauth.socialaccount.providers.google.provider import GoogleProvider
-from allauth.socialaccount.providers.steam.provider import SteamProvider
+from allauth.socialaccount.providers.steam.provider import SteamOpenIDProvider
 
 
 FXA_PROVIDER_ID = FirefoxAccountsProvider.id
 GITHUB_PROVIDER_ID = GitHubProvider.id
 GITLAB_PROVIDER_ID = GitLabProvider.id
 GOOGLE_PROVIDER_ID = GoogleProvider.id
-STEAM_PROVIDER_ID = SteamProvider.id
+STEAM_PROVIDER_ID = SteamOpenIDProvider.id
 
 
 class Command(BaseCommand):

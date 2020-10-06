@@ -166,6 +166,7 @@ INSTALLED_APPS = (
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.gitlab",
+    "allauth.socialaccount.providers.openid",
     "allauth.socialaccount.providers.steam",
     "notifications",
     "graphene_django",
