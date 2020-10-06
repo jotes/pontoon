@@ -166,6 +166,7 @@ INSTALLED_APPS = (
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.gitlab",
+    "allauth.socialaccount.providers.steam",
     "notifications",
     "graphene_django",
     "webpack_loader",
@@ -786,8 +787,8 @@ CORS_URLS_REGEX = r"^/(pontoon\.js|graphql/?)$"
 SOCIALACCOUNT_ENABLED = True
 SOCIALACCOUNT_ADAPTER = "pontoon.base.adapter.PontoonSocialAdapter"
 
-# Supported values: 'django', 'fxa', 'github', 'gitlab', 'google'
-AUTHENTICATION_METHOD = os.environ.get("AUTHENTICATION_METHOD", "django")
+# Supported values: 'django', 'fxa', 'github', 'gitlab', 'google', 'steam'
+AUTHENTICATION_METHOD = os.environ.get("AUTHENTICATION_METHOD", "steam")
 
 
 def account_username(user):
@@ -819,6 +820,10 @@ GITLAB_SECRET_KEY = os.environ.get("GITLAB_SECRET_KEY")
 # Google Accounts
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_SECRET_KEY = os.environ.get("GOOGLE_SECRET_KEY")
+
+# Steam
+STEAM_CLIENT_ID = os.environ.get("STEAM_CLIENT_ID")
+STEAM_SECRET_KEY = os.environ.get("STEAM_SECRET_KEY")
 
 # All settings related to the AllAuth
 SOCIALACCOUNT_PROVIDERS = {

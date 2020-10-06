@@ -13,12 +13,14 @@ from allauth.socialaccount.providers.fxa.provider import FirefoxAccountsProvider
 from allauth.socialaccount.providers.github.provider import GitHubProvider
 from allauth.socialaccount.providers.gitlab.provider import GitLabProvider
 from allauth.socialaccount.providers.google.provider import GoogleProvider
+from allauth.socialaccount.providers.steam.provider import SteamProvider
 
 
 FXA_PROVIDER_ID = FirefoxAccountsProvider.id
 GITHUB_PROVIDER_ID = GitHubProvider.id
 GITLAB_PROVIDER_ID = GitLabProvider.id
 GOOGLE_PROVIDER_ID = GoogleProvider.id
+STEAM_PROVIDER_ID = SteamProvider.id
 
 
 class Command(BaseCommand):
@@ -102,3 +104,17 @@ class Command(BaseCommand):
             )
 
             self.update_provider(google_data)
+
+        # Check if STEAM_* settings are configured
+        if (
+            settings.STEAM_CLIENT_ID is not None
+            and settings.STEAM_SECRET_KEY is not None
+        ):
+            steam_data = dict(
+                name="Steam",
+                provider=STEAM_PROVIDER_ID,
+                client_id=settings.STEAM_CLIENT_ID,
+                secret=settings.STEAM_SECRET_KEY,
+            )
+
+            self.update_provider(steam_data)
